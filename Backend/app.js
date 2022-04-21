@@ -21,6 +21,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/winbet', indexRouter);
+app.use('/upsetteam', indexRouter);
+app.use('/standings', indexRouter);
+app.use('/winafterloss', indexRouter);
+app.use('/favored', indexRouter);
+app.use('/pointstreak', indexRouter);
+app.use('/carryingteam', indexRouter);
+app.use('/consistentplayers', indexRouter);
+app.use('/stealsandpoints', indexRouter);
+
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
