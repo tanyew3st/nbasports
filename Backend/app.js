@@ -26,11 +26,14 @@ app.use('/upsetteam', indexRouter);
 app.use('/standings', indexRouter);
 app.use('/winafterloss', indexRouter);
 app.use('/favored', indexRouter);
+app.use('/unfavored', indexRouter);
 app.use('/pointstreak', indexRouter);
 app.use('/carryingteam', indexRouter);
 app.use('/consistentplayers', indexRouter);
 app.use('/stealsandpoints', indexRouter);
-
+app.use('/ifbetplayer', indexRouter);
+app.use('/ifbethome', indexRouter);
+app.use('/ifbetaway', indexRouter);
 
 
 // catch 404 and forward to error handler
