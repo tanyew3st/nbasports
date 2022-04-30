@@ -1146,12 +1146,13 @@ router.get('/ifbetaway', function(req, res) {
  const team = req.query.team ? req.query.team: 'Warriors'
    console.log(wager)
  
-     connection.query(`SELECT G.GameDate, G.GameID, G.HomeWin AS AwayLose, O.AverageLineML AS Odds
+     connection.query(`SELECT G.GameDate, G.GameID, G.HomeWin AS AwayLose, O.BestLineML AS Odds
      FROM Games G JOIN Odds O ON (G.GameID = O.GameID)
      WHERE G.VisitorTeamID IN (
          SELECT TeamId
          FROM Teams
-         WHERE (Nickname = '${team}'))
+         WHERE (Nickname = '${team}')) AND (O.Location = 'away')
+         ORDER BY G.GameDate
      `, function(error, results, fields) {
        if (error) {
          console.log(error)
@@ -1273,7 +1274,7 @@ router.get('/ifbetaway', function(req, res) {
  
          res.json({winnings: winnings, results: results})
          console.log(winnings)
-       
+         console.log(count)
  
        
         
