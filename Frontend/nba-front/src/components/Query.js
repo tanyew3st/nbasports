@@ -8,8 +8,8 @@ const Query = (props) => {
 
     useEffect(() => {
         fetch("http://localhost:3000/teamnames")
-            .then((results) => {
-                console.log(results.data);
+            .then((response) => {
+                console.log(response.json());
             })
     }, []);
 
