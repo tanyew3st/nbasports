@@ -39,6 +39,8 @@ app.use('/stealsandpoints', indexRouter);
 app.use('/ifbetplayer', indexRouter);
 app.use('/ifbethome', indexRouter);
 app.use('/ifbetaway', indexRouter);
+app.use('/teamnames', indexRouter);
+app.use('/onload', indexRouter);
 
 
 // catch 404 and forward to error handler

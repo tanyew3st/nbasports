@@ -1337,10 +1337,11 @@ router.get('/teamnames', function(req, res) {
 /* Query Parameters: N/A
 /* Response Parameters: the results, which is the a list of all of all the bets are their various inputs*/
 router.get('/onload', function(req, res) {
-
+  
  
   let text = '{ "Different Bets" : [' +
-  '{ "Name":"Favored Bet" , "Description": "Gets the data for various betting strategies, when the user bets on the favored team winning over an interval", "Route": "favored", "Forms": "startDate, finalDate, team, wager, bettingStrategy"}]}';
+  '{ "Name":"Favored Bet" , "Description": "Gets the data for various betting strategies, when the user bets on the favored team winning over an interval", "Route": "favored", "Forms": ""}, ' + 
+  '{ "Name":"Player Bet" , "Description": "Gets the data for various betting strategies, when the user bets on a team given that a player on that team scored a certain number of points in the last game", "Route": "ifbetplayer", "Forms": "player, numPoints"}]}';
  
   const obj = JSON.parse(text);
 
