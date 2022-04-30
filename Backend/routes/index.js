@@ -2,6 +2,11 @@
 var express = require('express');
 var router = express.Router();
 const mysql = require('mysql');
+
+const cors = require('cors');
+app.use(cors({
+    origin: "*"
+}));
  
  
 const connection = mysql.createConnection({
@@ -991,13 +996,13 @@ router.get('/ifbethome', function(req, res) {
  const wager = req.query.wager ? req.query.wager : 100
  const team = req.query.team ? req.query.team: 'Warriors'
    console.log(wager)
- 
-     connection.query(`SELECT G.GameDate, G.GameID, G.HomeWin, O.AverageLineML AS Odds
+   
+     connection.query(`SELECT G.GameDate, G.GameID, G.HomeWin, O.BestLineML AS Odds
      FROM Games G JOIN Odds O ON (G.GameID = O.GameID)
      WHERE G.HomeTeamID IN (
          SELECT TeamId
          FROM Teams
-         WHERE (Nickname = '${team}'))
+         WHERE (Nickname = '${team}')) AND (O.Location = 'home')
     
    
      `, function(error, results, fields) {
@@ -1021,7 +1026,7 @@ router.get('/ifbethome', function(req, res) {
                     winnings = ((-100 / (results[i].Odds)) * wager) + winnings
                     if (count % 1 == 0)
                     {
-                    console.log(winnings);
+                    console.log(winnings+"ODDS: "+results[i].Odds);
                     }
                    
                }
@@ -1121,7 +1126,7 @@ router.get('/ifbethome', function(req, res) {
  
          res.json({winnings: winnings, results: results})
          console.log(winnings)
-       
+         console.log(count)
  
        
         
