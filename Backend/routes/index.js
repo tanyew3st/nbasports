@@ -1324,13 +1324,29 @@ router.get('/teamnames', function(req, res) {
           res.json({error: error})
         }
         else if (results) {
-
           res.json({results: results})
         }
       });
   
   
  });
+
+ /* Route #16: Reports to the backend the various forms and inputs for the betting strategies 
+/* Request Path: /onload */
+/* Request Parameters: N/A
+/* Query Parameters: N/A
+/* Response Parameters: the results, which is the a list of all of all the bets are their various inputs*/
+router.get('/onload', function(req, res) {
+
+ 
+  let text = '{ "Different Bets" : [' +
+  '{ "Name":"Favored Bet" , "Description": "Gets the data for various betting strategies, when the user bets on the favored team winning over an interval", "Route": "favored", "Forms": "startDate, finalDate, team, wager, bettingStrategy"}]}';
+ 
+  const obj = JSON.parse(text);
+
+  res.json(obj);
+
+});
  
  
  
