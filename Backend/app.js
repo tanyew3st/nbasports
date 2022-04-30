@@ -15,7 +15,7 @@ app.set('view engine', 'jade');
 var cors = require('cors')
 app.use(cors({ credentials: true, origin: ['http://localhost:8000'] }));
 
-app.listen("8000", () => {
+app.listen("3000", () => {
   console.log(`TANAY!`);
 });
 
