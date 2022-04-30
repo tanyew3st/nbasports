@@ -6,7 +6,7 @@ import React, { Fragment, useState } from 'react'
 const Container = () => {
 
     // this is going to have all the logic
-    const [currentState, setCurrentState] = useState('Home');
+    const [currentState, setCurrentState] = useState('Team');
 
     return <Fragment>
         <div className="flex flex-row h-full">
