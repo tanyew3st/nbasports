@@ -12,7 +12,8 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-const cors = require('cors');
+var cors = require('cors')
+app.use(cors({ credentials: true, origin: ['http://localhost:8000'] }));
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -53,8 +54,5 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-app.use(cors({
-  origin: '*'
-}));
 
 module.exports = app;

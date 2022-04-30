@@ -1001,6 +1001,7 @@ router.get('/ifbethome', function(req, res) {
          SELECT TeamId
          FROM Teams
          WHERE (Nickname = '${team}')) AND (O.Location = 'home')
+         ORDER BY (G.GameDate)
     
    
      `, function(error, results, fields) {
