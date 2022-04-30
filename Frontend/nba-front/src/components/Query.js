@@ -1,11 +1,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react';
-import { faHome, faPlus, faBook, faBasketball, faPencil, faDollar, faCalendar, faHandshake, faHand } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRight, faHome, faPlus, faBook, faBasketball, faPencil, faDollar, faCalendar, faHandshake, faHand } from '@fortawesome/free-solid-svg-icons'
 
 const Query = (props) => {
 
     const [currentState, setCurrentState] = props.currentState;
-    const [teams, setTeams] = useState({});
+    const [teams, setTeams] = useState([]);
+    const [chosenTeam, setChosenTeam] = useState("");
 
     const params = {
         "Team": {
@@ -29,11 +30,20 @@ const Query = (props) => {
             "icon": faPencil
         }
     }
+    
+    console.log(teams);
 
     useEffect(() => {
         fetch("http://localhost:3000/teamnames")
             .then(response => response.json())
-            .then(data => {setTeams(data)});
+            .then(data => {
+                setTeams(data.results);
+            });
+        fetch("http://localhost:3000/onload")
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            });
     }, []);
 
     return ( 
@@ -47,10 +57,32 @@ const Query = (props) => {
                 </p>
                 <p className="text-2xl mt-4">{params[currentState].subtitle}</p>
             </div>
-            <div className="basis-3/4">
+            <div className="basis-3/4 mt-4">
                 {currentState == "Team" ? 
-                    (<div></div>) : 
-                    (<div></div>)}
+                    (<div>
+                        <div className="flex flex-wrap">
+                            {teams.map((team => (
+                                <div>
+                                    {team.Nickname != chosenTeam ? 
+                                        (<button onClick={ () => { setChosenTeam(team.Nickname) }} className="border-black rounded-lg border-2 p-2 m-2">
+                                            <p className="hover:font-bold">{team.Fullname}</p>
+                                        </button>) :
+                                        (<button onClick={ () => { setChosenTeam("") }} className="border-black bg-black rounded-lg border-2 p-2 m-2">
+                                            <p className="hover:font-bold text-white">{team.Fullname}</p>
+                                        </button>)
+                                    }   
+                                </div>
+                            )))}
+                        </div>      
+                    <br></br>
+                    {chosenTeam != "" ? <button onClick={ () => setCurrentState("Strategy")}
+                        className={`border-green-400 bg-green-400 border-2 m-2 p-2 rounded-lg 
+                            text-white hover:bg-white hover:text-green-400`}>Next Step <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
+                    </div>
+                    ) : currentState == "Strategy" ?
+                        (<div></div>) : 
+                        (<div></div>)
+                    }
             </div>
         </div>
     )
