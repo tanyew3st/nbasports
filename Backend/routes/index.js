@@ -4,9 +4,7 @@ var router = express.Router();
 const mysql = require('mysql');
 
 const cors = require('cors');
-app.use(cors({
-    origin: "*"
-}));
+
  
  
 const connection = mysql.createConnection({
