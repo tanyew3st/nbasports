@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-p
+p, button
 {
    font-family: 'Courier New', Courier, monospace !important;
 }

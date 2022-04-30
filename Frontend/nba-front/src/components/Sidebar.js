@@ -2,18 +2,31 @@ import React, { Fragment } from 'react';
 
 const Sidebar = (props) => {
     const [currentState, setCurrentState] = props.currentState;
+    const options = [
+        {
+            alias: "Home",
+            icon: "fa fa-home",
+            color: "text-white"
+        },
+        {
+            alias: "New Query",
+            icon: "fa fa-plus",
+            color: "text-white"
+        },
+        {
+            alias: "My Queries",
+            icon: "fa fa-book",
+            color: "text-white"
+        },
+    ]
 
     return <Fragment> 
         <div className="bg-gray-800 h-full pt-10 pl-5">
-            <p className="text-white text-xl mb-3" 
-                onClick={setCurrentState('Home')}>
-                <i className="fa fa-home"></i> Home</p>
-            <p className="text-white text-xl mb-3" 
-                onClick={setCurrentState('New Query')}>
-                <i className="fa fa-plus"></i> New Query</p>
-            <p className="text-white text-xl" 
-                onClick={setCurrentState('My Queries')}>
-                <i className="fa fa-book"></i> My Queries</p>
+            {options.map((obj) => <div>
+                <button className={`text-xl mb-3 ${currentState === obj.alias ? "text-green-400" : obj.color }`}
+                onClick={() => setCurrentState(obj.alias)}>
+                <i className={obj.icon}></i> {obj.alias}</button>
+            </div>)}
         </div>  
     </Fragment>
 }
