@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHome, faPlus, faBook, faBasketball, faPencil } from '@fortawesome/free-solid-svg-icons'
+import { faHome, faPlus, faBook, faBasketball, faPencil, faDollar, faCalendar, faHandshake } from '@fortawesome/free-solid-svg-icons'
 
 const Sidebar = (props) => {
     const [currentState, setCurrentState] = props.currentState;
@@ -23,7 +23,27 @@ const Sidebar = (props) => {
         {
             alias: "Team",
             icon: faBasketball,
-            color: "text-gray-100"
+            color: "text-gray-300"
+        },
+        {
+            alias: "Strategy",
+            icon: faHandshake,
+            color: "text-gray-300"
+        },
+        {
+            alias: "Form",
+            icon: faPencil,
+            color: "text-gray-300"
+        },
+        {
+            alias: "Wage",
+            icon: faDollar,
+            color: "text-gray-300"
+        },
+        {
+            alias: "Date",
+            icon: faCalendar,
+            color: "text-gray-300"
         },
     ]
 
