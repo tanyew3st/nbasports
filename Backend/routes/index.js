@@ -254,46 +254,55 @@ router.get('/winafterloss', function(req, res) {
 });
 
 /* Route #6: GETS the data for various betting strategies, when the user bets on the favored team winning over an interval   */
-/* Request Path: “/favored?betType=&wager=*/
+/* Request Path: “/favored?betType=&wager=&team=*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the */
-/* Query Parameters: N/A */
+/* Query Parameters: Team */
 /* Response Parameters: the results, which is the expected profit from this kind of bet on the favorite team each time for various wagers and betting strategies, along with the relevant game data */
  
 router.get('/favored', function(req, res) {
  const betType = req.query.betType ? req.query.betType : "Constant"
  const wager = req.query.wager ? req.query.wager : 100
+ const team = req.query.team? req.query.team : "Warriors"
+ const startDate = req.query.start? req.query.start: "2012-10-30"
+ const finalDate = req.query.end? req.query.end : "2019-04-10"
   console.log(wager)
  
      connection.query(`WITH OddsWin AS (
-       SELECT O.TeamId as oti, O.GameId AS GameID, O.AverageLineML AS AverageLineML, O.Result, T.TeamId, T.Nickname AS Nickname
-           FROM Odds O, Teams T
-       WHERE T.TeamId = O.TeamId
-       ), GameOdds AS (
-           SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.AverageLineML AS HomeOdds, AOdds.AverageLineML AS AwayOdds, HOdds.Result AS HomeResult
-           FROM OddsWin HOdds, Games G, OddsWin AOdds
-           WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
-       ), GameOddsWithFavored AS (
-           (SELECT *, HomeTeam AS FavoredTeam
-           FROM GameOdds
-           WHERE (HomeOdds < 0))
-           UNION
-           (SELECT *, AwayTeam AS FavoredTeam
-           FROM GameOdds
-           WHERE (AwayTeam < 0))
-       ), FavoredWins AS (
-           SELECT GameId, GameDate, HomeTeam, AwayTeam, FavoredTeam, HomeOdds, AwayOdds, 1 AS FavoredWins
-           FROM GameOddsWithFavored
-           WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
-       ), FavoredLosses AS (
-           SELECT GameId, GameDate, HomeTeam, AwayTeam, FavoredTeam, HomeOdds, AwayOdds, 0 AS FavoredWins
-           FROM GameOddsWithFavored
-           WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
-       )
-       SELECT *
-       FROM FavoredLosses
-       UNION
-       SELECT *
-       FROM FavoredWins
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.BestLineML AS BestLineML, O.Result, T.TeamId, T.Nickname AS Nickname
+        FROM Odds O, Teams T
+      WHERE T.TeamId = O.TeamId
+      ), GameOdds AS (
+         SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BestLineML AS HomeOdds, AOdds.BestLineML AS AwayOdds, HOdds.Result AS HomeResult
+         FROM OddsWin HOdds, Games G, OddsWin AOdds
+         WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
+      ), GameOddsWithFavored AS (
+         (SELECT *, HomeTeam AS FavoredTeam
+         FROM GameOdds
+         WHERE (HomeOdds < 0))
+         UNION
+         (SELECT *, AwayTeam AS FavoredTeam
+         FROM GameOdds
+         WHERE (AwayOdds < 0))
+      ), FavoredWins AS (
+         SELECT GameId, GameDate, HomeTeam, AwayTeam, FavoredTeam, HomeOdds, AwayOdds, 1 AS FavoredWins
+         FROM GameOddsWithFavored
+         WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
+      ), FavoredLosses AS (
+         SELECT GameId, GameDate, HomeTeam, AwayTeam, FavoredTeam, HomeOdds, AwayOdds, 0 AS FavoredWins
+         FROM GameOddsWithFavored
+         WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
+      ), UnionBoth AS (
+         SELECT *
+         FROM FavoredLosses
+         UNION
+         SELECT *
+         FROM FavoredWins
+      )
+      SELECT *
+      FROM UnionBoth
+      WHERE GameDate >= '${startDate}' AND GameDate <= '${finalDate}' AND FavoredTeam= '${team}'
+      ORDER BY GameDate;
+      
       
    
      `, function(error, results, fields) {
@@ -315,7 +324,7 @@ router.get('/favored', function(req, res) {
                {
                   
                     winnings = ((-100 / (results[i].HomeOdds)) * wager) + winnings
-                    if (count % 100 == 0)
+                    if (count % 1 == 0)
                     {
                     console.log(winnings);
                     }
@@ -323,7 +332,7 @@ router.get('/favored', function(req, res) {
                else if (results[i].AwayOdds < 0)
                {
                    winnings = ((-100 / (results[i].AwayOdds)) * wager) + winnings
-                   if (count % 100 == 0)
+                   if (count % 1 == 0)
                     {
                     console.log(winnings);
                     }
@@ -333,7 +342,7 @@ router.get('/favored', function(req, res) {
             else
             {
                  winnings = winnings - wager
-                 if (count % 100 == 0)
+                 if (count % 1 == 0)
                     {
                     console.log(winnings);
                     }
@@ -416,6 +425,7 @@ router.get('/favored', function(req, res) {
  
          res.json({winnings: winnings, results: results})
          console.log(winnings)
+         console.log(count)
  
        
         
@@ -430,40 +440,49 @@ router.get('/favored', function(req, res) {
 /* Query Parameters: N/A */
 /* Response Parameters: the results, which is the expected profit from this kind of bet on the underdog team each time for various wagers and betting strategies, along with the relevant game data */
 router.get('/unfavored', function(req, res) {
- const betType = req.query.betType ? req.query.betType : "Constant"
- const wager = req.query.wager ? req.query.wager : 100
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team? req.query.team : "Warriors"
+  const startDate = req.query.start? req.query.start: "2012-10-30"
+  const finalDate = req.query.end? req.query.end : "2019-04-10"
   console.log(wager)
  
      connection.query(`WITH OddsWin AS (
-       SELECT O.TeamId as oti, O.GameId AS GameID, O.AverageLineML AS AverageLineML, O.Result, T.TeamId, T.Nickname AS Nickname
-           FROM Odds O, Teams T
-       WHERE T.TeamId = O.TeamId
-       ), GameOdds AS (
-           SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.AverageLineML AS HomeOdds, AOdds.AverageLineML AS AwayOdds, HOdds.Result AS HomeResult
-           FROM OddsWin HOdds, Games G, OddsWin AOdds
-           WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
-       ), GameOddsWithFavored AS (
-           (SELECT *, AwayTeam AS UnfavoredTeam
-           FROM GameOdds
-           WHERE (HomeOdds < 0))
-           UNION
-           (SELECT *, HomeTeam AS UnfavoredTeam
-           FROM GameOdds
-           WHERE (AwayTeam < 0))
-       ), UnfavoredWins AS (
-           SELECT GameId, GameDate, HomeTeam, AwayTeam, UnfavoredTeam, HomeOdds, AwayOdds, 0 AS UnfavoredLosses
-           FROM GameOddsWithFavored
-           WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
-       ), UnfavoredLosses AS (
-           SELECT GameId, GameDate, HomeTeam, AwayTeam, UnfavoredTeam, HomeOdds, AwayOdds, 1 as UnfavoredWins
-           FROM GameOddsWithFavored
-           WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
-       )
-       SELECT *
-       FROM UnfavoredLosses
-       UNION
-       SELECT *
-       FROM UnfavoredWins
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.BestLineML AS BestLineML, O.Result, T.TeamId, T.Nickname AS Nickname
+        FROM Odds O, Teams T
+      WHERE T.TeamId = O.TeamId
+      ), GameOdds AS (
+         SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BestLineML AS HomeOdds, AOdds.BestLineML AS AwayOdds, HOdds.Result AS HomeResult
+         FROM OddsWin HOdds, Games G, OddsWin AOdds
+         WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
+      ), GameOddsWithFavored AS (
+         (SELECT *, AwayTeam AS UnfavoredTeam
+         FROM GameOdds
+         WHERE (HomeOdds < 0))
+         UNION
+         (SELECT *, HomeTeam AS UnfavoredTeam
+         FROM GameOdds
+         WHERE (AwayOdds < 0))
+      ), UnfavoredWins AS (
+         SELECT GameId, GameDate, HomeTeam, AwayTeam, UnfavoredTeam, HomeOdds, AwayOdds, 0 AS UnfavoredLosses
+         FROM GameOddsWithFavored
+         WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
+      ), UnfavoredLosses AS (
+         SELECT GameId, GameDate, HomeTeam, AwayTeam, UnfavoredTeam, HomeOdds, AwayOdds, 1 as UnfavoredWins
+         FROM GameOddsWithFavored
+         WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
+      ), UnionBoth AS (
+         SELECT *
+         FROM UnfavoredLosses
+         UNION
+         SELECT *
+         FROM UnfavoredWins
+      )
+      SELECT *
+      FROM UnionBoth
+      WHERE GameDate >='${startDate}' AND GameDate <= '${finalDate}' AND UnfavoredTeam='${team}'
+      ORDER BY GameDate;
+      
       
       
       
@@ -487,7 +506,7 @@ router.get('/unfavored', function(req, res) {
                {
                   
                     winnings = ((-100 / (results[i].HomeOdds)) * wager) + winnings
-                    if (count % 100 == 0)
+                    if (count % 1 == 0)
                     {
                     console.log(winnings);
                     }
@@ -495,7 +514,7 @@ router.get('/unfavored', function(req, res) {
                else if (results[i].AwayOdds < 0)
                {
                    winnings = ((-100 / (results[i].AwayOdds)) * wager) + winnings
-                   if (count % 100 == 0)
+                   if (count % 1 == 0)
                     {
                     console.log(winnings);
                     }
@@ -505,7 +524,7 @@ router.get('/unfavored', function(req, res) {
             else
             {
                  winnings = winnings - wager
-                 if (count % 100 == 0)
+                 if (count % 1 == 0)
                     {
                     console.log(winnings);
                     }
@@ -818,39 +837,44 @@ router.get('/ifbetplayer', function(req, res) {
  const player = req.query.player ? req.query.player: 'Stephen Curry'
  const numPoints = req.query.points ? req.query.points: 20
  const team = req.query.team ? req.query.team: 'Golden State'
+ const startDate = req.query.start? req.query.start: "2012-10-30"
+  const finalDate = req.query.end? req.query.end : "2019-04-10"
    console.log(wager)
  
      connection.query(`WITH HomeTeam AS (
-       SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, O.Team AS HomeTeam, O.Opponent AS AwayTeam, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
-       FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID
-       WHERE O.Team = '${team}' AND O.Location = 'Home'
-       ORDER BY O.Date ASC
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, O.Team AS HomeTeam, O.Opponent AS AwayTeam, O.Result AS BettedResult, O.GameID AS GameID, O.BestLineML AS BettedAverageLineML
+      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID
+      WHERE O.Team = '${team}' AND O.Location = 'Home'
+      ORDER BY O.Date ASC
      ), AwayTeam AS (
-       SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName,O.Opponent AS HomeTeam, O.Team AS AwayTeam, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
-       FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID
-       WHERE O.Team ='${team}' AND O.Location = 'Away'
-       ORDER BY O.Date ASC
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName,O.Opponent AS HomeTeam, O.Team AS AwayTeam, O.Result AS BettedResult, O.GameID AS GameID, O.BestLineML AS BettedAverageLineML
+      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID
+      WHERE O.Team = '${team}'AND O.Location = 'Away'
+      ORDER BY O.Date ASC
+     ), PlayerToTeam AS (
+        SELECT DISTINCT p.PLAYER_NAME AS PlayerName, o.Team AS Team
+        FROM Players p JOIN Odds o ON p.TEAM_ID = o.TeamId
      ), UnionHomeAway AS (
-         SELECT *
-         FROM HomeTeam H
-         WHERE H.PlayerName = '${player}'
-         UNION
-         SELECT *
-         FROM AwayTeam A
-         WHERE A.PlayerName = '${player}'
+        SELECT *
+        FROM HomeTeam H
+        WHERE H.PlayerName = '${player}' AND EXISTS (SELECT * FROM PlayerToTeam WHERE PlayerName = '${player}' AND Team = '${team}')
+        UNION
+        SELECT *
+        FROM AwayTeam A
+        WHERE A.PlayerName = '${player}' AND EXISTS (SELECT * FROM PlayerToTeam WHERE PlayerName = '${player}' AND Team = '${team}')
      ), NumberedRows AS (
-         SELECT ROW_NUMBER() OVER(ORDER BY O.Date) AS RowNumber, O.Date AS Date, '${team}' AS BettedTeam, O.PTS as PTS, O.PlayerName AS PlayerName, O.HomeTeam AS HomeTeam,
-              O.AwayTeam AS AwayTeam, O.BettedResult AS BettedResult, O.GameID AS GameID, O.BettedAverageLineML AS BettedAverageLineML
-         FROM UnionHomeAway O
-         ORDER BY O.Date
+        SELECT ROW_NUMBER() OVER(ORDER BY O.Date) AS RowNumber, O.Date AS Date, '${team}' AS BettedTeam, O.PTS as PTS, O.PlayerName AS PlayerName, O.HomeTeam AS HomeTeam,
+             O.AwayTeam AS AwayTeam, O.BettedResult AS BettedResult, O.GameID AS GameID, O.BettedAverageLineML AS BettedAverageLineML
+        FROM UnionHomeAway O
+        ORDER BY O.Date
      ), CartesianProduct AS (
-       SELECT A.Date, A.BettedTeam AS BettedTeam, A.HomeTeam, A.AwayTeam, A.BettedAverageLineML, A.BettedResult AS BetResult
-       FROM NumberedRows A,  NumberedRows B
-       WHERE A.RowNumber = (B.RowNumber - 1) AND B.PTS >= '${numPoints}'
+      SELECT A.Date, A.BettedTeam AS BettedTeam, A.HomeTeam, A.AwayTeam, A.BettedAverageLineML, A.BettedResult AS BetResult
+      FROM NumberedRows A,  NumberedRows B
+      WHERE A.RowNumber = (B.RowNumber - 1) AND B.PTS >= '${numPoints}'
      )
      SELECT *
-     FROM CartesianProduct;
-    
+     FROM CartesianProduct
+     WHERE Date >= '${startDate}' AND Date <= '${finalDate}';
       
    
      `, function(error, results, fields) {
@@ -1274,7 +1298,7 @@ router.get('/ifbetaway', function(req, res) {
  
          res.json({winnings: winnings, results: results})
          console.log(winnings)
-         console.log(count)
+         console.log
  
        
         
