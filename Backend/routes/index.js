@@ -1278,6 +1278,30 @@ router.get('/ifbetaway', function(req, res) {
  
  
 });
+
+/* Route #15: GETS all of the team names and nicknames like "Warriors, 76ers, etc."*/
+/* Request Path: “/teamnames” */
+/* Request Parameters: N/A
+/* Query Parameters: N/A
+/* Response Parameters: the results, which is the a list of all of the team names along with their nicknames*/
+router.get('/teamnames', function(req, res) {
+
+  
+      connection.query(`SELECT DISTINCT CONCAT(t.CITY, ' ', t.Nickname) AS Fullname, t.Nickname AS Nickname
+      FROM Teams t;
+      `, function(error, results, fields) {
+        if (error) {
+          console.log(error)
+          res.json({error: error})
+        }
+        else if (results) {
+
+          res.json({results: results})
+        }
+      });
+  
+  
+ });
  
  
  
