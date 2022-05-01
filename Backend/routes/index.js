@@ -1313,7 +1313,7 @@ router.get('/teamnames', function(req, res) {
 /* Response Parameters: the results, which is the a list of all of all the bets are their various inputs*/
 router.get('/onload', function(req, res) {
   
-  var obj = [{
+  var obj = {
     "Bet Strategies" :
     [{
     "name": "Player Bet",
@@ -1335,7 +1335,7 @@ router.get('/onload', function(req, res) {
       "name": "Constant",
       "description": "Betting the same amount of money, the wager, on each bet",   
     }]
-  }]
+  }
       
  
   res.json(obj);
