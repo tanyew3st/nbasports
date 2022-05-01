@@ -7,7 +7,8 @@ const Query = (props) => {
     const [currentState, setCurrentState] = props.currentState;
     const [teams, setTeams] = useState([]);
     const [chosenTeam, setChosenTeam] = useState("");
-    const [chosenStrategy, setChosenStrategy] = useState({});
+    const [strategies, setStrategies] = useState([]);
+    const [chosenStrategy, setChosenStrategy] = useState("");
 
     const params = {
         "Team": {
@@ -46,8 +47,8 @@ const Query = (props) => {
         fetch("http://localhost:3000/onload")
             .then(response => response.json())
             .then(data => {
-                console.log("loading");
-                setChosenStrategy(data);
+                console.log(data)
+                setStrategies(data);
             });
     }, []);
 
@@ -82,15 +83,22 @@ const Query = (props) => {
                             )))}
                         </div>      
                     <br></br>
-                    {chosenTeam != "" ? <button onClick={ () => setCurrentState("Strategy")}
+                    {chosenTeam !== "" ? <button onClick={ () => setCurrentState("Strategy")}
                         className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
                             text-white hover:bg-white hover:text-green-400`}>Next Step <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                     </div>
                     ) : currentState == "Strategy" ?
                         (<div>
-                            {chosenStrategy.map((strategy) => { 
-                                
-                            })}
+                            <div className="flex flex-wrap">
+                                {strategies.map((strategy => 
+                                    (<div>
+                                        <button onClick={ () => { setChosenTeam(strategy) }} className="border-black rounded-lg border-2 p-2 m-2">
+                                            <p className="text-3xl font-bold hover:font-bold">{strategy["name"]}</p>
+                                            <p>{strategy["description"]}</p>
+                                        </button>
+                                    </div>)
+                                ))}
+                            </div>
                         </div>) : 
                         (<div></div>)
                     }
