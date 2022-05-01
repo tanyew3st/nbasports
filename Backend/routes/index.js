@@ -256,7 +256,7 @@ router.get('/winafterloss', function(req, res) {
 /* Route #6: GETS the data for various betting strategies, when the user bets on the favored team winning over an interval   */
 /* Request Path: “/favored?betType=&wager=&team=*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the */
-/* Query Parameters: Team */
+/* Query Parameters: Team and Dates*/
 /* Response Parameters: the results, which is the expected profit from this kind of bet on the favorite team each time for various wagers and betting strategies, along with the relevant game data */
  
 router.get('/favored', function(req, res) {
@@ -313,39 +313,33 @@ router.get('/favored', function(req, res) {
        else if (results) {
          let winnings = 0;
          count = 0;
- 
          if (betType == "Constant")
          {
          for (let i = 0; i  < results.length; i++)
          {
+            results[i].wager = wager;
             if (results[i].FavoredWins == 1)
             {
                if (results[i].HomeOdds < 0)
                {
                   
                     winnings = ((-100 / (results[i].HomeOdds)) * wager) + winnings
-                    if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                    results[i].amountwon = ((-100 / (results[i].HomeOdds)) * wager) 
+                    results[i].totalwinnings = winnings;
                }
                else if (results[i].AwayOdds < 0)
                {
                    winnings = ((-100 / (results[i].AwayOdds)) * wager) + winnings
-                   if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                   results[i].amountwon = ((-100 / (results[i].AwayOdds)) * wager) 
+                    results[i].totalwinnings = winnings;
                }
              
             }
             else
             {
                  winnings = winnings - wager
-                 if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                 results[i].amountwon = -100;
+                 results[i].totalwinnings = winnings;
             }
             count++;
          }
@@ -353,35 +347,32 @@ router.get('/favored', function(req, res) {
          else if (betType == "Increment")
          {
            for (let i = 0; i  < results.length; i++)
-           {
+           {  
               if (results[i].FavoredWins == 1)
               {
                  if (results[i].HomeOdds < 0)
                  {
                     
                       winnings = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1))) + winnings
-                      if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                      results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1)));
+                      results[i].totalwinnings = winnings;
+                      results[i].wager = (wager * (count + 1));
                  }
                  else if (results[i].AwayOdds < 0)
                  {
                      winnings = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1))) + winnings
-                     if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1)));
+                      results[i].totalwinnings = winnings;
+                      results[i].wager = (wager * (count + 1));
                  }
                
               }
               else
               {
-                   winnings = winnings - (wager * (count + 1))
-                   if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   winnings = winnings - (wager * (count + 1));
+                   results[i].amountwon = - (wager * (count + 1));
+                      results[i].totalwinnings = winnings;
+                      results[i].wager = (wager * (count + 1));
               }
               count++;
            }
@@ -390,41 +381,37 @@ router.get('/favored', function(req, res) {
          {
            for (let i = 0; i  < results.length; i++)
            {
+
               if (results[i].FavoredWins == 1)
               {
                  if (results[i].HomeOdds < 0)
                  {
-                    
                       winnings = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1)))) + winnings
-                      if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                      results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1))));
+                      results[i].totalwinnings = winnings;
+                      results[i].wager = (wager * (2 *  (count + 1)));
                  }
                  else if (results[i].AwayOdds < 0)
                  {
                      winnings = ((-100 / (results[i].AwayOdds)) *  (wager * (2 *  (count + 1)))) + winnings
-                     if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (2 *  (count + 1))));
+                      results[i].totalwinnings = winnings;
+                      results[i].wager = (wager * (2 *  (count + 1)));
                  }
                
               }
               else
               {
-                   winnings = winnings -  (wager * (2 *  (count + 1)))
-                   if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   winnings = winnings -  (wager * (2 *  (count + 1)));
+                   results[i].amountwon = -  (wager * (2 *  (count + 1)));
+                      results[i].totalwinnings = winnings;
+                      results[i].wager = (wager * (2 *  (count + 1)));
               }
               count++;
            }
          }
  
-         res.json({winnings: winnings, results: results})
-         console.log(winnings)
+         res.json({finalwinnings: winnings, results: results})
          console.log(count)
  
        
@@ -500,34 +487,29 @@ router.get('/unfavored', function(req, res) {
          {
          for (let i = 0; i  < results.length; i++)
          {
+            results[i].wager = wager;
             if (results[i].UnfavoredWins == 1)
             {
                if (results[i].HomeOdds < 0)
                {
                   
                     winnings = ((-100 / (results[i].HomeOdds)) * wager) + winnings
-                    if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                    results[i].amountwon = ((-100 / (results[i].HomeOdds)) * wager) 
+                    results[i].totalwinnings = winnings;
                }
                else if (results[i].AwayOdds < 0)
                {
                    winnings = ((-100 / (results[i].AwayOdds)) * wager) + winnings
-                   if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                   results[i].amountwon = ((-100 / (results[i].AwayOdds)) * wager) 
+                    results[i].totalwinnings = winnings;
                }
              
             }
             else
             {
                  winnings = winnings - wager
-                 if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                 results[i].amountwon = -wager;
+                  results[i].totalwinnings = winnings;
             }
             count++;
          }
@@ -536,34 +518,32 @@ router.get('/unfavored', function(req, res) {
          {
            for (let i = 0; i  < results.length; i++)
            {
+              
               if (results[i].UnfavoredWins == 1)
               {
                  if (results[i].HomeOdds < 0)
                  {
                     
                       winnings = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1))) + winnings
-                      if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                      results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1)))
+                      results[i].totalwinnings = winnings;
+                      results[i].wager = (wager * (count + 1));
                  }
                  else if (results[i].AwayOdds < 0)
                  {
                      winnings = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1))) + winnings
-                     if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1)))
+                    results[i].totalwinnings = winnings;
+                    results[i].wager = (wager * (count + 1));
                  }
                
               }
               else
               {
-                   winnings = winnings - (wager * (count + 1))
-                   if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   winnings = winnings - (wager * (count + 1));
+                   results[i].amountwon = - (wager * (count + 1));
+                    results[i].totalwinnings = winnings;
+                    results[i].wager = (wager * (count + 1));
               }
               count++;
            }
@@ -578,28 +558,25 @@ router.get('/unfavored', function(req, res) {
                  {
                     
                       winnings = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1)))) + winnings
-                      if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                      results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1))))
+                      results[i].totalwinnings = winnings;
+                     results[i].wager =(wager * (2 *  (count + 1)));
                  }
                  else if (results[i].AwayOdds < 0)
                  {
                      winnings = ((-100 / (results[i].AwayOdds)) *  (wager * (2 *  (count + 1)))) + winnings
-                     if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (2 *  (count + 1))))
+                      results[i].totalwinnings = winnings;
+                     results[i].wager =(wager * (2 *  (count + 1)));
                  }
                
               }
               else
               {
                    winnings = winnings -  (wager * (2 *  (count + 1)))
-                   if (count % 100 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].amountwon = -  (wager * (2 *  (count + 1)))
+                      results[i].totalwinnings = winnings;
+                     results[i].wager = (wager * (2 *  (count + 1)));
               }
               count++;
            }
@@ -616,9 +593,7 @@ router.get('/unfavored', function(req, res) {
  
 });
  
- 
- 
- 
+
 /* Route #8: GETS the probability of a specified player scoring a certain amount of points after they already scored that number in the game prior */
 /* Request Path: “/pointsstreak?player=&numPoints=” */
 /* Request Parameters: N/A
@@ -1344,10 +1319,16 @@ router.get('/onload', function(req, res) {
     "route": "ifbetplayer",
     "form" :
     {
-        "Player Name"    : "player",
-        "Points"         : "integer"
-    }}]
-
+        "player"    : "player",
+        "points"         : "integer"
+    }}, {
+      "name": "Favored Bet",
+      "description": " GETS the data for various betting strategies, when the user bets on the favored team winning over an interval",
+      "route": "favored",
+      "form" :
+      {
+      }} ]
+      
  
   res.json(obj);
 
@@ -1364,6 +1345,7 @@ router.get('/playersonteam', function(req, res) {
   connection.query(`SELECT DISTINCT p.PLAYER_NAME AS PlayerName
   FROM Players p JOIN Teams t ON p.TEAM_ID = t.TeamId
   WHERE NICKNAME = '${team}';
+  ORDER BY p.PLAYER_NAME;
   `, function(error, results, fields) {
     if (error) {
       console.log(error)
