@@ -80,8 +80,8 @@ const Query = (props) => {
             .then(response => response.json())
             .then(data => {
                 console.log(data)
-                setStrategies(data["betStrategies"]);
-                setStrategies(data["wageStrategies"]);
+                setStrategies(data["Bet Strategies"]);
+                setWageStrategies(data["Wage Strategies"]);
             });
     }, []);
 
@@ -132,11 +132,11 @@ const Query = (props) => {
                                             <p className="pt-2">{strategy["description"]}</p>
                                         </button>
                                         <br></br>
-                                        {Object.keys(chosenStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Form"); findFields() } }
-                                        className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
-                                            text-white hover:bg-white hover:text-green-400`}>Next Step: Forms <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                                     </div>)
                                 ))}
+                                {Object.keys(chosenStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Form"); findFields() } }
+                                        className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
+                                            text-white hover:bg-white hover:text-green-400`}>Next Step: Forms <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                             </div>
                         </div>
                     ) : currentState === "Form" ?
