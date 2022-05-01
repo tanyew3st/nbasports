@@ -7,6 +7,7 @@ const Query = (props) => {
     const [currentState, setCurrentState] = props.currentState;
     const [teams, setTeams] = useState([]);
     const [chosenTeam, setChosenTeam] = useState("");
+    const [chosenStrategy, setChosenStrategy] = useState({});
 
     const params = {
         "Team": {
@@ -36,8 +37,6 @@ const Query = (props) => {
         }
     }
     
-    console.log(teams);
-
     useEffect(() => {
         fetch("http://localhost:3000/teamnames")
             .then(response => response.json())
@@ -48,7 +47,7 @@ const Query = (props) => {
             .then(response => response.json())
             .then(data => {
                 console.log("loading");
-                console.log(data);
+                setChosenStrategy(data);
             });
     }, []);
 
@@ -76,7 +75,7 @@ const Query = (props) => {
                                             <p className="hover:font-bold">{team.Fullname}</p>
                                         </button>) :
                                         (<button onClick={ () => { setChosenTeam("") }} className="border-black bg-black rounded-lg border-2 p-2 m-2">
-                                            <p className="hover:font-bold text-white">{team.Fullname}</p>
+                                            <p className="hover:font-bold text-green-400">{team.Fullname}</p>
                                         </button>)
                                     }   
                                 </div>
@@ -84,11 +83,15 @@ const Query = (props) => {
                         </div>      
                     <br></br>
                     {chosenTeam != "" ? <button onClick={ () => setCurrentState("Strategy")}
-                        className={`border-green-400 bg-green-400 border-2 m-2 p-2 rounded-lg 
+                        className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
                             text-white hover:bg-white hover:text-green-400`}>Next Step <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                     </div>
                     ) : currentState == "Strategy" ?
-                        (<div></div>) : 
+                        (<div>
+                            {chosenStrategy.map((strategy) => { 
+                                
+                            })}
+                        </div>) : 
                         (<div></div>)
                     }
             </div>

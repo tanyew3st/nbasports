@@ -1338,16 +1338,15 @@ router.get('/teamnames', function(req, res) {
 /* Response Parameters: the results, which is the a list of all of all the bets are their various inputs*/
 router.get('/onload', function(req, res) {
   
-  var obj = {
+  var obj = [{
     "Name": "Player Bet",
-    "Description" : "Gets the data for various betting strategies, when the user bets on a team given that a player on that team scored a certain number of points in the last game ",
-    "Route"      : "ifbetplayer",
-    "Form"  :
+    "Description": "Gets the data for various betting strategies, when the user bets on a team given that a player on that team scored a certain number of points in the last game ",
+    "Route": "ifbetplayer",
+    "Form" :
     {
         "Player Name"    : "player",
-        "Points"         : "Integer"
-    },
-}
+        "Points"         : "integer"
+    }}]
 
  
   res.json(obj);
