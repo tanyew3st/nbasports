@@ -27,7 +27,12 @@ const Query = (props) => {
         "Wage": {
             "title": "Wage",
             "subtitle": "Select the wage strategy that will be used to determine which games the simulator runs.",
-            "icon": faPencil
+            "icon": faDollar
+        },
+        "Date": {
+            "title": "Date",
+            "subtitle": "Select the dates through which the simulator will run your bets!",
+            "icon": faCalendar
         }
     }
     
@@ -42,6 +47,7 @@ const Query = (props) => {
         fetch("http://localhost:3000/onload")
             .then(response => response.json())
             .then(data => {
+                console.log("loading");
                 console.log(data);
             });
     }, []);
@@ -49,7 +55,9 @@ const Query = (props) => {
     return ( 
         <div className="h-full flex flex-col ml-10 mr-10">
             <div>
-                <FontAwesomeIcon className="border-black p-4 mt-8 border-2 rounded-full w-child" icon={ params[currentState].icon } size="3x" />
+                <FontAwesomeIcon 
+                    className="border-black p-4 mt-8 border-2 rounded-full w-child hover:text-green-400" 
+                    icon={ params[currentState].icon } size="3x" />
             </div>
             <div className="basis-1/4">
                 <p className="text-5xl font-bold mt-16">

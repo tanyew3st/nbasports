@@ -7,41 +7,49 @@ const Sidebar = (props) => {
     const options = [
         {
             alias: "Home",
+            name: "Home",
             icon: faHome,
             color: "text-white"
         },
         {
             alias: "New Query",
+            name: "New Query",
             icon: faPlus,
             color: "text-white"
         },
         {
             alias: "My Queries",
+            name: "My Queries",
             icon: faBook,
             color: "text-white"
         },
         {
             alias: "Team",
+            name: "Team",
             icon: faBasketball,
             color: "text-gray-300"
         },
         {
             alias: "Strategy",
+            name: "Strategy",
             icon: faHandshake,
             color: "text-gray-300"
         },
         {
             alias: "Form",
+            name: "Form",
             icon: faPencil,
             color: "text-gray-300"
         },
         {
             alias: "Wage",
+            name: "Wage",
             icon: faDollar,
             color: "text-gray-300"
         },
         {
             alias: "Date",
+            name: "Date",
             icon: faCalendar,
             color: "text-gray-300"
         },
