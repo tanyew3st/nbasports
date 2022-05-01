@@ -1340,8 +1340,8 @@ router.get('/onload', function(req, res) {
   
  
   let text = '{ "Different Bets" : [' +
-  '{ "Name":"Favored Bet" , "Description": "Gets the data for various betting strategies, when the user bets on the favored team winning over an interval", "Route": "favored", "Forms": ""}, ' + 
-  '{ "Name":"Player Bet" , "Description": "Gets the data for various betting strategies, when the user bets on a team given that a player on that team scored a certain number of points in the last game", "Route": "ifbetplayer", "Forms": "player, numPoints"}]}';
+  '{ "Name":"Favored Bet" , "Description": "Gets the data for various betting strategies, when the user bets on the favored team winning over an interval", "Route": "favored", "Forms": "[]"}, ' + 
+  '{ "Name":"Player Bet" , "Description": "Gets the data for various betting strategies, when the user bets on a team given that a player on that team scored a certain number of points in the last game", "Route": "ifbetplayer", "Forms": "[“Player Name”: “player”, “Points”: “integer”]"}]}';
  
   const obj = JSON.parse(text);
 
