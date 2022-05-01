@@ -1315,7 +1315,7 @@ router.get('/ifbetaway', function(req, res) {
 /* Response Parameters: the results, which is the a list of all of the team names along with their nicknames*/
 router.get('/teamnames', function(req, res) {
 
-  
+
       connection.query(`SELECT DISTINCT CONCAT(t.CITY, ' ', t.Nickname) AS Fullname, t.Nickname AS Nickname
       FROM Teams t;
       `, function(error, results, fields) {
@@ -1349,7 +1349,29 @@ router.get('/onload', function(req, res) {
 
 });
  
- 
+/* Route #17: Gets all of the names of the the players on a given team */
+/* Request Path: “/playersonteam” */
+/* Request Parameters: N/A
+/* Query Parameters: Nickname of Team
+/* Response Parameters: the results, which is the a list of all of the players on a given team*/
+router.get('/playersonteam', function(req, res) {
+
+  const team = req.query.team ? req.query.team: 'Warriors'
+  connection.query(`SELECT DISTINCT p.PLAYER_NAME AS PlayerName
+  FROM Players p JOIN Teams t ON p.TEAM_ID = t.TeamId
+  WHERE NICKNAME = '${team}';
+  `, function(error, results, fields) {
+    if (error) {
+      console.log(error)
+      res.json({error: error})
+    }
+    else if (results) {
+      res.json({results: results})
+    }
+  });
+
+
+});
  
  
 module.exports = router;
