@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react';
-import { faArrowRight, faHome, faPlus, faBook, faBasketball, faPencil, faDollar, faCalendar, faHandshake, faHand } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRight, faHome, faPlus, faBook, faSearch, faBasketball, faPencil, faDollar, faCalendar, faHandshake, faHand } from '@fortawesome/free-solid-svg-icons'
 
 const Query = (props) => {
 
@@ -8,7 +8,14 @@ const Query = (props) => {
     const [teams, setTeams] = useState([]);
     const [chosenTeam, setChosenTeam] = useState("");
     const [strategies, setStrategies] = useState([]);
-    const [chosenStrategy, setChosenStrategy] = useState("");
+    const [wageStrategies, setWageStrategies] = useState([]);
+    const [wager, setWager] = useState(0);
+    const [chosenWageStrategy, setChosenWageStrategy] = useState([]);
+    const [chosenStrategy, setChosenStrategy] = useState({});
+    const [players, setPlayers] = useState([]);
+    const [playerSearch, setPlayerSearch] = useState("");
+
+    const [formData, setFormData] = useState({})
 
     const params = {
         "Team": {
@@ -37,6 +44,31 @@ const Query = (props) => {
             "icon": faCalendar
         }
     }
+
+    const handlePlayerChange = (event) => {
+        setPlayerSearch(event.target.value.toLowerCase());
+    }
+
+    const findFields = () => {
+        // also want to initialize the formData object
+
+        if (Object.values(chosenStrategy.form).includes("player")) {
+            console.log("http://localhost:3000/playersonteam?team=" + chosenTeam)
+            fetch("http://localhost:3000/playersonteam?team=" + chosenTeam)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.results);
+                    setPlayers(data.results);
+                });
+        }
+
+        const f = {}
+        for (const form of Object.keys(chosenStrategy.form)) {
+            chosenStrategy.form[form] === "integer" ? f[form] = 0 : f[form] = ""
+            if (chosenStrategy.form[form] === "player") { f[form] = players[0]["PlayerName"]}
+        }
+        setFormData(f);
+    }
     
     useEffect(() => {
         fetch("http://localhost:3000/teamnames")
@@ -48,7 +80,8 @@ const Query = (props) => {
             .then(response => response.json())
             .then(data => {
                 console.log(data)
-                setStrategies(data);
+                setStrategies(data["betStrategies"]);
+                setStrategies(data["wageStrategies"]);
             });
     }, []);
 
@@ -85,22 +118,134 @@ const Query = (props) => {
                     <br></br>
                     {chosenTeam !== "" ? <button onClick={ () => setCurrentState("Strategy")}
                         className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
-                            text-white hover:bg-white hover:text-green-400`}>Next Step <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
+                            text-white hover:bg-white hover:text-green-400`}>Next Step: Strategy <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                     </div>
-                    ) : currentState == "Strategy" ?
+                    ) : currentState === "Strategy" ?
                         (<div>
                             <div className="flex flex-wrap">
                                 {strategies.map((strategy => 
                                     (<div>
-                                        <button onClick={ () => { setChosenTeam(strategy) }} className="border-black rounded-lg border-2 p-2 m-2">
-                                            <p className="text-3xl font-bold hover:font-bold">{strategy["name"]}</p>
-                                            <p>{strategy["description"]}</p>
+                                        <button onClick={ () => { strategy["name"] === chosenStrategy["name"] ? setChosenStrategy("") : setChosenStrategy(strategy) }} 
+                                            className={`divide-y divide-black hover:divide-green-400 border-black hover:bg-black hover:text-green-400
+                                                        rounded-lg border-2 p-2 m-2 ${strategy["name"] === chosenStrategy["name"] ? "bg-black text-white divide-white" : ""}`}>
+                                            <p className="text-3xl mb-2 font-bold">{strategy["name"]}</p>
+                                            <p className="pt-2">{strategy["description"]}</p>
                                         </button>
+                                        <br></br>
+                                        {Object.keys(chosenStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Form"); findFields() } }
+                                        className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
+                                            text-white hover:bg-white hover:text-green-400`}>Next Step: Forms <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                                     </div>)
                                 ))}
                             </div>
+                        </div>
+                    ) : currentState === "Form" ?
+                        (<div className="mt-4">
+                            {Object.keys(chosenStrategy.form).map(f => (
+                                <div>
+                                    {chosenStrategy.form[f] === "player" ? 
+                                    <div className="mb-2">
+                                        <p className="font-bold text-3xl mb-4">{f}</p>
+                                        <label className="relative block">
+                                            <span className="sr-only">Search</span>
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-2">
+                                                <FontAwesomeIcon icon={ faSearch }></FontAwesomeIcon>
+                                            </span>
+                                            <input id="player_search" value={playerSearch} onChange={handlePlayerChange} className="placeholder:italic placeholder:text-black block bg-white w-full border border-black rounded-md py-2 pl-9 pr-3 shadow-sm focus:outline-none focus:border-green-400 focus:ring-green-400 focus:ring-1 sm:text-sm" placeholder="Search Players" type="text" name="search"/>
+                                        </label>                                        
+                                    <div>
+                                    <div className="flex mt-5 flex-wrap h-32 overflow-x-scroll border-green-400 border-2 p-2">
+                                        {players.map(player => <div>{(player["PlayerName"].toLowerCase().includes(playerSearch.toLowerCase())) ? (<button onClick={() => {
+                                            const prev = {...formData};
+                                            prev[f] = player["PlayerName"];
+                                            setFormData(prev);
+                                        }}><p className={`m-1 border-black rounded-md p-1 border-2 hover:font-bold ${formData[f] === player["PlayerName"] ? "text-green-400 bg-black": ""}`}>{player["PlayerName"]}</p></button>) : <div></div>}</div>)}
+                                    </div>
+                                </div>
+                            </div> : <div>{chosenStrategy.form[f] === "integer" ? <div>
+                                {/* if the chosen strategy is an integer field */}
+                                <div className="mt-5">
+                                    <p className="font-bold text-3xl mb-4">{f}</p>
+                                    <div class="relative pt-1">
+                                    <input type="range" class="form-range
+                                        text-green-400
+                                        w-full
+                                        accent-green-400
+                                        border-none
+                                        range-primary-green-400
+                                        h-6
+                                        p-0
+                                        focus:outline-none focus:ring-0 focus:shadow-none
+                                        "id="customRange1"
+                                        value={formData[f]}
+                                        onChange={(event) => {console.log(formData); 
+                                            const newFormData = {...formData};
+                                            newFormData[f] = event.target.value;
+                                            setFormData(newFormData)}}
+                                        min={0} max={150} step={1}
+                                    />
+                                    <ul class="flex justify-between w-full">
+                                        <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">0</span></li>
+                                        <li class="flex justify-center relative font-bold text-xl">Current: {formData[f]}</li>
+                                        <li class="flex justify-center relative font-bold text-xl mr-2"><span class="absolute">150</span></li>
+                                    </ul>
+                                    </div>
+                                </div>
+                            </div> : <div></div>}</div>}
+                                </div>
+                            ))}
+                        <div>
+                            <button onClick={ () => setCurrentState("Wage")}
+                            className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
+                                text-white hover:bg-white hover:text-green-400`}>Next Step: Wage <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button>
+                        </div>
                         </div>) : 
-                        (<div></div>)
+                        <div>{currentState === "Wage" ? (<div>
+                            <div className="flex flex-wrap">
+                                {wageStrategies.map((strategy => 
+                                    (<div>
+                                        <button onClick={ () => { strategy["name"] === chosenWageStrategy["name"] ? setChosenStrategy("") : setChosenStrategy(strategy) }} 
+                                            className={`divide-y divide-black hover:divide-green-400 border-black hover:bg-black hover:text-green-400
+                                                        rounded-lg border-2 p-2 m-2 ${strategy["name"] === chosenWageStrategy["name"] ? "bg-black text-white divide-white" : ""}`}>
+                                            <p className="text-3xl mb-2 font-bold">{strategy["name"]}</p>
+                                            <p className="pt-2">{strategy["description"]}</p>
+                                        </button>
+                                        <br></br>
+                                        {Object.keys(chosenWageStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Date"); findFields() } }
+                                        className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
+                                            text-white hover:bg-white hover:text-green-400`}>Next Step: Date <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
+                                    </div>)
+                                ))}
+                            </div>
+                            <div>
+                            <div className="mt-5">
+                                <p className="font-bold text-3xl mb-4">Choose a Wager</p>
+                                <div class="relative pt-1">
+                                <input type="range" class="form-range
+                                    text-green-400
+                                    w-full
+                                    accent-green-400
+                                    border-none
+                                    range-primary-green-400
+                                    h-6
+                                    p-0
+                                    focus:outline-none focus:ring-0 focus:shadow-none
+                                    "id="customRange1"
+                                    value={wager}
+                                    onChange={(event) => {setWager(event.target.value)}}
+                                    min={0} max={10000} step={5}
+                                />
+                                <ul class="flex justify-between w-full">
+                                    <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">0</span></li>
+                                    <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">2500</span></li>
+                                    <li class="flex justify-center relative font-bold text-xl">Current: {wager}</li>
+                                    <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">7500</span></li>
+                                    <li class="flex justify-center relative font-bold text-xl mr-2"><span class="absolute">10000</span></li>
+                                </ul>
+                                </div>
+                            </div>
+                            </div>
+                        </div>) : (<div></div>)}</div>
                     }
             </div>
         </div>

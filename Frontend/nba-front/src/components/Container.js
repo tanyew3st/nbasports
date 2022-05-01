@@ -9,12 +9,12 @@ const Container = () => {
     const [currentState, setCurrentState] = useState('Team');
 
     return <Fragment>
-        <div className="flex flex-row h-full">
+        <div className="flex flex-row h-full overflow-y-scroll">
             <div className="basis-1/4 h-full">
                 <Sidebar currentState={[currentState, setCurrentState]}>
                 </Sidebar>
             </div>
-            <div className="basis-3/4 h-full">
+            <div className="basis-3/4 h-full overflow-y-scroll">
                 <Query currentState={[currentState, setCurrentState]}></Query>
             </div>
         </div>
