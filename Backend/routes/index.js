@@ -1314,6 +1314,8 @@ router.get('/teamnames', function(req, res) {
 router.get('/onload', function(req, res) {
   
   var obj = [{
+    "Bet Strategies" :
+    [{
     "name": "Player Bet",
     "description": "Gets the data for various betting strategies, when the user bets on a team given that a player on that team scored a certain number of points in the last game ",
     "route": "ifbetplayer",
@@ -1327,7 +1329,13 @@ router.get('/onload', function(req, res) {
       "route": "favored",
       "form" :
       {
-      }} ]
+      }}], 
+    "Wage Strategies" :
+    [{
+      "name": "Constant",
+      "description": "Betting the same amount of money, the wager, on each bet",   
+    }]
+  }]
       
  
   res.json(obj);
