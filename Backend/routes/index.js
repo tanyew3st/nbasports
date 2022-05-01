@@ -1352,7 +1352,7 @@ router.get('/playersonteam', function(req, res) {
   const team = req.query.team ? req.query.team: 'Warriors'
   connection.query(`SELECT DISTINCT p.PLAYER_NAME AS PlayerName
   FROM Players p JOIN Teams t ON p.TEAM_ID = t.TeamId
-  WHERE NICKNAME = '${team}';
+  WHERE NICKNAME = '${team}'
   ORDER BY p.PLAYER_NAME;
   `, function(error, results, fields) {
     if (error) {
