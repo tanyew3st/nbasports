@@ -865,35 +865,30 @@ router.get('/ifbetplayer', function(req, res) {
          {
          for (let i = 0; i  < results.length; i++)
          {
+            results[i].wager = wager;
             if (results[i].BetResult == "W")
             {
                if (results[i].BettedAverageLineML < 0)
                {
                   
                     winnings = ((-100 / (results[i].BettedAverageLineML)) * wager) + winnings
-                    if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                    results[i].amountwon = ((-100 / (results[i].BettedAverageLineML)) * wager);
+                    results[i].totalwinnings = winnings;
                    
                }
                else if (results[i].BettedAverageLineML > 0)
                {
                    winnings = ((results[i].BettedAverageLineML / (100)) * wager) + winnings
-                   if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                   results[i].amountwon = ((results[i].BettedAverageLineML / (100)) * wager);
+                   results[i].totalwinnings = winnings;
                }
              
             }
             else
             {
                  winnings = winnings - wager
-                 if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                 results[i].amountwon = -wager;
+                results[i].totalwinnings = winnings;
             }
             count++;
          }
@@ -908,28 +903,25 @@ router.get('/ifbetplayer', function(req, res) {
                  {
                     
                    winnings = ((-100 / (results[i].BettedAverageLineML)) * (wager * (count + 1))) + winnings
-                      if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (count + 1))
+                   results[i].amountwon = ((-100 / (results[i].BettedAverageLineML)) * (wager * (count + 1)));
+                   results[i].totalwinnings = winnings;
                  }
                  else if (results[i].BettedAverageLineML > 0)
                  {
                    winnings = ((results[i].BettedAverageLineML / (100)) * (wager * (count + 1))) + winnings
-                     if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (count + 1))
+                   results[i].amountwon = ((results[i].BettedAverageLineML / (100)) * (wager * (count + 1)));
+                   results[i].totalwinnings = winnings;
                  }
                
               }
               else
               {
                    winnings = winnings - (wager * (count + 1))
-                   if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (count + 1))
+                   results[i].amountwon = -(wager * (count + 1));
+                   results[i].totalwinnings = winnings;
               }
               count++;
            }
@@ -944,28 +936,25 @@ router.get('/ifbetplayer', function(req, res) {
                  {
                     
                    winnings = ((-100 / (results[i].BettedAverageLineML)) * (wager * (2 *  (count + 1)))) + winnings
-                      if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (2 *  (count + 1)))
+                   results[i].amountwon = ((-100 / (results[i].BettedAverageLineML)) * (wager * (2 *  (count + 1))))
+                   results[i].totalwinnings = winnings;
                  }
                  else if (results[i].BettedAverageLineML > 0)
                  {
                    winnings = ((results[i].BettedAverageLineML / (100)) *  (wager * (2 *  (count + 1)))) + winnings
-                     if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (2 *  (count + 1)))
+                   results[i].amountwon = ((results[i].BettedAverageLineML / (100)) *  (wager * (2 *  (count + 1))))
+                   results[i].totalwinnings = winnings;
                  }
                
               }
               else
               {
                    winnings = winnings -  (wager * (2 *  (count + 1)))
-                   if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (2 *  (count + 1)))
+                   results[i].amountwon = -(wager * (2 *  (count + 1)))
+                   results[i].totalwinnings = winnings;
               }
               count++;
            }
@@ -1016,35 +1005,30 @@ router.get('/ifbethome', function(req, res) {
          {
          for (let i = 0; i  < results.length; i++)
          {
+            results[i].wager = wager;
             if (results[i].HomeWin == 1)
             {
                if (results[i].Odds < 0)
                {
                   
                     winnings = ((-100 / (results[i].Odds)) * wager) + winnings
-                    if (count % 1 == 0)
-                    {
-                    console.log(winnings+"ODDS: "+results[i].Odds);
-                    }
+                    results[i].amountwon = ((-100 / (results[i].Odds)) * wager)
+                    results[i].totalwinnings = winnings;
                    
                }
                else if (results[i].Odds > 0)
                {
                    winnings = ((results[i].Odds / (100)) * wager) + winnings
-                   if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                   results[i].amountwon = ((results[i].Odds / (100)) * wager)
+                   results[i].totalwinnings = winnings;
                }
              
             }
             else
             {
                  winnings = winnings - wager
-                 if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                 results[i].amountwon = -wager;
+                 results[i].totalwinnings = winnings;
             }
             count++;
          }
@@ -1059,28 +1043,25 @@ router.get('/ifbethome', function(req, res) {
                  {
                     
                    winnings = ((-100 / (results[i].Odds)) * (wager * (count + 1))) + winnings
-                      if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (count + 1))
+                   results[i].amountwon = ((-100 / (results[i].Odds)) * (wager * (count + 1)))
+                   results[i].totalwinnings = winnings;
                  }
                  else if (results[i].Odds > 0)
                  {
                    winnings = ((results[i].Odds / (100)) * (wager * (count + 1))) + winnings
-                     if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (count + 1))
+                   results[i].amountwon = ((results[i].Odds / (100)) * (wager * (count + 1)))
+                   results[i].totalwinnings = winnings;
                  }
                
               }
               else
               {
                    winnings = winnings - (wager * (count + 1))
-                   if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (count + 1))
+                   results[i].amountwon = -(wager * (count + 1))
+                   results[i].totalwinnings = winnings;
               }
               count++;
            }
@@ -1095,28 +1076,25 @@ router.get('/ifbethome', function(req, res) {
                  {
                     
                    winnings = ((-100 / (results[i].Odds)) * (wager * (2 *  (count + 1)))) + winnings
-                      if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (2 *  (count + 1)))
+                   results[i].amountwon = ((-100 / (results[i].Odds)) * (wager * (2 *  (count + 1)))) 
+                   results[i].totalwinnings = winnings;
                  }
                  else if (results[i].Odds > 0)
                  {
                    winnings = ((results[i].Odds / (100)) *  (wager * (2 *  (count + 1)))) + winnings
-                     if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (2 *  (count + 1)))
+                   results[i].amountwon = ((results[i].Odds / (100)) *  (wager * (2 *  (count + 1))))
+                   results[i].totalwinnings = winnings;
                  }
                
               }
               else
               {
                    winnings = winnings -  (wager * (2 *  (count + 1)))
-                   if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (2 *  (count + 1)))
+                   results[i].amountwon = -(wager * (2 *  (count + 1)))
+                   results[i].totalwinnings = winnings;
               }
               count++;
            }
@@ -1165,35 +1143,30 @@ router.get('/ifbetaway', function(req, res) {
          {
          for (let i = 0; i  < results.length; i++)
          {
+            results[i].wager = wager;
             if (results[i].AwayLose == 0)
             {
                if (results[i].Odds < 0)
                {
                   
                     winnings = ((-100 / (results[i].Odds)) * wager) + winnings
-                    if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                    results[i].amountwon = ((-100 / (results[i].Odds)) * wager)
+                    results[i].totalwinnings = winnings;
                    
                }
                else if (results[i].Odds > 0)
                {
                    winnings = ((results[i].Odds / (100)) * wager) + winnings
-                   if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                   results[i].amountwon = ((results[i].Odds / (100)) * wager)
+                   results[i].totalwinnings = winnings;
                }
              
             }
             else
             {
                  winnings = winnings - wager
-                 if (count % 1 == 0)
-                    {
-                    console.log(winnings);
-                    }
+                 results[i].amountwon = -wager
+                   results[i].totalwinnings = winnings;
             }
             count++;
          }
@@ -1208,28 +1181,25 @@ router.get('/ifbetaway', function(req, res) {
                  {
                     
                    winnings = ((-100 / (results[i].Odds)) * (wager * (count + 1))) + winnings
-                      if (count % 1 == 0)
-                      {
-                      console.log(winnings);
+                   results[i].wager = (wager * (count + 1))
+                   results[i].amountwon = ((-100 / (results[i].Odds)) * (wager * (count + 1)))
+                   results[i].totalwinnings = winnings;
                       }
                  }
                  else if (results[i].Odds > 0)
                  {
                    winnings = ((results[i].Odds / (100)) * (wager * (count + 1))) + winnings
-                     if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (count + 1))
+                   results[i].amountwon = ((results[i].Odds / (100)) * (wager * (count + 1)))
+                   results[i].totalwinnings = winnings;
                  }
                
-              }
               else
               {
                    winnings = winnings - (wager * (count + 1))
-                   if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (count + 1))
+                   results[i].amountwon = -(wager * (count + 1))
+                   results[i].totalwinnings = winnings;
               }
               count++;
            }
@@ -1244,28 +1214,26 @@ router.get('/ifbetaway', function(req, res) {
                  {
                     
                    winnings = ((-100 / (results[i].Odds)) * (wager * (2 *  (count + 1)))) + winnings
-                      if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (2 *  (count + 1)))
+                   results[i].amountwon = ((-100 / (results[i].Odds)) * (wager * (2 *  (count + 1)))) 
+                   results[i].totalwinnings = winnings;
                  }
                  else if (results[i].Odds > 0)
                  {
                    winnings = ((results[i].Odds / (100)) *  (wager * (2 *  (count + 1)))) + winnings
                      if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                     results[i].wager = (wager * (2 *  (count + 1)))
+                   results[i].amountwon = ((results[i].Odds / (100)) *  (wager * (2 *  (count + 1))))
+                   results[i].totalwinnings = winnings;
                  }
                
               }
               else
               {
                    winnings = winnings -  (wager * (2 *  (count + 1)))
-                   if (count % 1 == 0)
-                      {
-                      console.log(winnings);
-                      }
+                   results[i].wager = (wager * (2 *  (count + 1)))
+                   results[i].amountwon = -(wager * (2 *  (count + 1)))
+                   results[i].totalwinnings = winnings;
               }
               count++;
            }
@@ -1325,16 +1293,44 @@ router.get('/onload', function(req, res) {
         "points"         : "integer"
     }}, {
       "name": "Favored Bet",
-      "description": " GETS the data for various betting strategies, when the user bets on the favored team winning over an interval",
+      "description": " Gets the data for various betting strategies, when the user bets on the favored team winning over an interval",
       "route": "favored",
       "form" :
       {
-      }}], 
+      },}, {
+        "name": "Unfavored Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on the unfavored team winning over an interval",
+        "route": "unfavored",
+        "form" :
+        {
+        },}, {
+          "name": "Home Bet",
+          "description": " Gets the data for various betting strategies, when the user bets on the home team winning over an interval",
+          "route": "ifbethome",
+          "form" :
+          {
+          },}, 
+          {
+            "name": "Away Bet",
+            "description": " Gets the data for various betting strategies, when the user bets on the away team winning over an interval",
+            "route": "ifbetaway",
+            "form" :
+            {
+            },}], 
     "Wage Strategies" :
     [{
       "name": "Constant",
       "description": "Betting the same amount of money, the wager, on each bet",   
-    }]
+    }, 
+    {
+      "name": "Doubling",
+      "description": "Betting double the amount of money of the previous wager, on each bet",   
+    },
+    {
+      "name": "Increment",
+      "description": "Betting an incrementing amount of money on each wager",   
+    }
+  ]
   }
       
  
