@@ -338,7 +338,7 @@ router.get('/favored', function(req, res) {
             else
             {
                  winnings = winnings - wager
-                 results[i].amountwon = -100;
+                 results[i].amountwon = -wager;
                  results[i].totalwinnings = winnings;
             }
             count++;
