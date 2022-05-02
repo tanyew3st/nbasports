@@ -9,13 +9,15 @@ const Sidebar = (props) => {
             alias: "Home",
             name: "Home",
             icon: faHome,
-            color: "text-white"
+            color: "text-white",
+            href: "home"
         },
         {
             alias: "New Query",
             name: "New Query",
             icon: faPlus,
-            color: "text-white"
+            color: "text-white",
+            href: "newquery"
         },
         {
             alias: "My Queries",
@@ -59,7 +61,10 @@ const Sidebar = (props) => {
         <div className="bg-gray-800 h-full pt-10 pl-5">
             {options.map((obj) => <div>
                 <button className={`text-xl mb-3 ${currentState === obj.alias ? "text-green-400" : obj.color }`}
-                onClick={() => setCurrentState(obj.alias)}>
+                onClick={() => {
+                    setCurrentState(obj.alias);
+
+                }}>
                 <FontAwesomeIcon icon={ obj.icon } /> { obj.alias }</button>
             </div>)}
         </div>  

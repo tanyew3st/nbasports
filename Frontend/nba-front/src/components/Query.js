@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react';
-import { faArrowRight, faHome, faPlus, faAward, faBook, faSearch, faBasketball, faPencil, faDollar, faCalendar, faHandshake, faHand } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRight, faHome, faPlus, faAward, faBook, faArrowLeft, faSearch, faBasketball, faPencil, faDollar, faCalendar, faHandshake, faHand } from '@fortawesome/free-solid-svg-icons'
 
 const Query = (props) => {
 
@@ -64,7 +64,7 @@ const Query = (props) => {
         for (const form of Object.keys(formData)) {
             location += "&" + form + `=${formData[form]}`
         }
-        console.log(location);
+        window.location.href = "/query/" + location;
     }
 
     const findFields = () => {
@@ -259,9 +259,14 @@ const Query = (props) => {
                                 </div>
                             </div>
                             <br></br>
-                            {Object.keys(chosenWageStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Date"); findFields() } }
-                            className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
-                                text-white hover:bg-white hover:text-green-400`}>Next Step: Date <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
+                                <div className="flex flex-row space-x-4">
+                                    <button onClick={ () => { setCurrentState("Date"); findFields() } }
+                                    className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
+                                        text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Wage</button>
+                                    {Object.keys(chosenWageStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Date"); findFields() } }
+                                    className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
+                                        text-white hover:bg-white hover:text-green-400`}>Next Step: Date <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
+                                </div>
                             </div>
                         </div>) : (<div><div className="mt-2 flex space-x-10">
                             <input value={startDate} onChange={(event) => {setStartDate(event.target.value)}} min="2012-10-30" max="2019-04-10" className="w-1/2 accent-green-400 p-2 selection:bg-green-400 border-black border-2 focus:border-green-400 rounded-lg color-scheme-green-400" type="date"></input>

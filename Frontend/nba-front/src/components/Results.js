@@ -10,7 +10,7 @@ const Results = (props) => {
     const [hideWins, setHideWins] = useState(false)
     const [hideLosses, setHideLosses] = useState(false)
     const [money, setMoney] = useState([]);
-    const [number, setNumber] = useState([]);
+    const [num, setNum] = useState([]);
     const [loading, setLoading] = useState(true);
     const [animation, setAnimation] = useState(false);
     const [animationNumber, setAnimationNumber] = useState(0);
@@ -28,14 +28,14 @@ const Results = (props) => {
                 }, 2000)
                 return prev
             } else {
-                return (prev + (finalWinnings / 2));
+                return (prev + (finalWinnings / 500));
         }
 
         })
     }
 
     let config = {
-        labels: number,
+        labels: num,
         legend: false,
         datasets: [
           {
@@ -50,35 +50,7 @@ const Results = (props) => {
                 return results[index]["FavoredWins"] ? 'rgb(74 222 128)' : 'rgb(0,0,0)'
             }
           },
-        ],
-        options: {
-            plugins:{   
-               legend: {
-                 display: false
-                       },
-                    }
-               }
-      };
-    
-    const updateConfig = () => {
-        config = {
-            labels: number,
-            legend: false,
-            datasets: [
-              {
-                label: "Total Winnings",
-                data: money,
-                fill: true,
-                // backgroundColor: "rgb(74 222 128)",
-                borderColor: "black",
-                pointBackgroundColor: function(context) {
-                    var index = context.dataIndex;
-                    // var value = context.dataset.data[index];
-                    return results[index]["FavoredWins"] ? 'rgb(74 222 128)' : 'rgb(0,0,0)'
-                }
-              },
-            ] 
-          };
+        ]
     }
 
     const keys = ["Game ID", "Date", "Home", "Away", "Bet", "Home Odds", "Away Odds", "Win", "Wager", "Winnings", "Total Winnings"]
@@ -88,17 +60,17 @@ const Results = (props) => {
             .then(results => results.json())
             .then(data => {
                 const money = [];
-                const number = [];
+                const num = [];
                 let i = 1;
                 setFinalWinnings(data["finalwinnings"]);
                 setResults(data.results);
-                for (const result of results) {
+                for (const result of data.results) {
                     money.push(result["totalwinnings"]);
-                    number.push(i);
+                    num.push(i);
                     i++;
                 }
                 setMoney(money);
-                setNumber(number);
+                setNum(num);
                 inter = setInterval(() => {stepTowards(data["finalwinnings"]);}, 10);
             })
     }, [query])
@@ -123,7 +95,7 @@ const Results = (props) => {
                             <button onClick={() => setView("table")} className={`border-black border-2 text-xl w-full rounded-l-lg ${view == "table" ? "bg-black text-green-400" : ""}`}>Table</button>
                         </div>
                         <div className="mr-4 w-1/2">
-                            <button onClick={() => {setView("graph"); updateConfig()} } className={`border-black border-2 text-xl w-full rounded-r-lg ${view == "graph" ? "bg-black text-green-400" : ""}`}>Graph</button>
+                            <button onClick={() => {setView("graph")} } className={`border-black border-2 text-xl w-full rounded-r-lg ${view == "graph" ? "bg-black text-green-400" : ""}`}>Graph</button>
                         </div>
                     </div>
                     <div className="flex flex-row mt-5">
@@ -152,7 +124,8 @@ const Results = (props) => {
                         </tbody>
                     </table> : 
                     <div>
-                        <Line data={config} />
+                        <Line 
+                            data={config} />
                     </div>}
                 </div>
             </div>
