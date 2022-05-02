@@ -582,7 +582,7 @@ router.get('/unfavored', function(req, res) {
            }
          }
  
-         res.json({winnings: winnings, results: results})
+         res.json({finalwinnings:  winnings, results: results})
          console.log(winnings)
  
        
@@ -960,7 +960,7 @@ router.get('/ifbetplayer', function(req, res) {
            }
          }
  
-         res.json({winnings: winnings, results: results})
+         res.json({finalwinnings: winnings, results: results})
          console.log(winnings)
        
  
@@ -1100,7 +1100,7 @@ router.get('/ifbethome', function(req, res) {
            }
          }
  
-         res.json({winnings: winnings, results: results})
+         res.json({finalwinnings:  winnings, results: results})
          console.log(winnings)
          console.log(count)
  
@@ -1239,9 +1239,8 @@ router.get('/ifbetaway', function(req, res) {
            }
          }
  
-         res.json({winnings: winnings, results: results})
-         console.log(winnings)
-         console.log
+         res.json({finalwinnings:  winnings, results: results})
+         
  
        
         
