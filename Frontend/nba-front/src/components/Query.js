@@ -229,9 +229,9 @@ const Query = (props) => {
                         <div>{currentState === "Wage" ? (<div>
                             <div className="flex flex-wrap">
                                 {wageStrategies.map((strategy => 
-                                    (<div>
+                                    (<div className="w-full">
                                         <button onClick={ () => { strategy["name"] === chosenWageStrategy["name"] ? setChosenStrategy("") : setChosenWageStrategy(strategy) }} 
-                                            className={`divide-y divide-black hover:divide-green-400 border-black hover:bg-black hover:text-green-400
+                                            className={`w-full divide-y divide-black hover:divide-green-400 border-black hover:bg-black hover:text-green-400
                                                         rounded-lg border-2 p-2 m-2 ${strategy["name"] === chosenWageStrategy["name"] ? "bg-black text-white divide-white" : ""}`}>
                                             <p className="text-3xl mb-2 font-bold">{strategy["name"]}</p>
                                             <p className="pt-2">{strategy["description"]}</p>

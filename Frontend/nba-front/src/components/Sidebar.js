@@ -68,7 +68,7 @@ const Sidebar = (props) => {
                 <FontAwesomeIcon icon={ faHome } /> Home</button>
             </div>
             <div>
-                <Link to="/newquery"><button className={`text-xl mb-3 
+                <Link to="/newquery"><button className={`text-xl mb-3 hover:text-gray-300
                     ${false ? "text-green-400" : "text-white" }`}
                 onClick={() => {
                     setCurrentState("Team");

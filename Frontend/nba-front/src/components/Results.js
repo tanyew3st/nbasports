@@ -59,10 +59,11 @@ const Results = (props) => {
         fetch("http://localhost:3000/" + query)
             .then(results => results.json())
             .then(data => {
+                console.log(data);
                 const money = [];
                 const num = [];
                 let i = 1;
-                setFinalWinnings(data["finalwinnings"]);
+                setFinalWinnings(data["winnings"]);
                 setResults(data.results);
                 for (const result of data.results) {
                     money.push(result["totalwinnings"]);
@@ -71,7 +72,7 @@ const Results = (props) => {
                 }
                 setMoney(money);
                 setNum(num);
-                inter = setInterval(() => {stepTowards(data["finalwinnings"]);}, 10);
+                inter = setInterval(() => {stepTowards(data["winnings"]);}, 10);
             })
     }, [query])
 
