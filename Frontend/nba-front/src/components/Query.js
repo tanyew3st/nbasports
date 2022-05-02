@@ -152,9 +152,14 @@ const Query = (props) => {
                                         <br></br>
                                     </div>)
                                 ))}
-                                {Object.keys(chosenStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Form"); findFields() } }
-                                        className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
-                                            text-white hover:bg-white hover:text-green-400`}>Next Step: Forms <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
+                                <div className="flex flex-row space-x-4 mt-4">
+                                    <button onClick={ () => { setCurrentState("Team"); findFields() } }
+                                    className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
+                                        text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Teams</button>
+                                    {Object.keys(chosenStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Form"); findFields() } }
+                                    className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
+                                        text-white hover:bg-white hover:text-green-400`}>Next Step: Forms <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
+                                </div>
                             </div>
                         </div>
                     ) : currentState === "Form" ?
@@ -212,11 +217,14 @@ const Query = (props) => {
                             </div> : <div></div>}</div>}
                                 </div>
                             ))}
-                        <div>
-                            <button onClick={ () => setCurrentState("Wage")}
-                            className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
-                                text-white hover:bg-white hover:text-green-400`}>Next Step: Wage <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button>
-                        </div>
+                                <div className="flex flex-row space-x-4 mt-6">
+                                    <button onClick={ () => { setCurrentState("Strategy"); findFields() } }
+                                    className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
+                                        text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Strategy</button>
+                                    {true ? <button onClick={ () => { setCurrentState("Wage"); findFields() } }
+                                    className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
+                                        text-white hover:bg-white hover:text-green-400`}>Next Step: Wage <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
+                                </div>
                         </div>) : 
                         <div>{currentState === "Wage" ? (<div>
                             <div className="flex flex-wrap">
@@ -262,7 +270,7 @@ const Query = (props) => {
                                 <div className="flex flex-row space-x-4">
                                     <button onClick={ () => { setCurrentState("Date"); findFields() } }
                                     className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
-                                        text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Wage</button>
+                                        text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Form</button>
                                     {Object.keys(chosenWageStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Date"); findFields() } }
                                     className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
                                         text-white hover:bg-white hover:text-green-400`}>Next Step: Date <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
