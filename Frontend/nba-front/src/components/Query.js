@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react';
-import { faArrowRight, faHome, faPlus, faBook, faSearch, faBasketball, faPencil, faDollar, faCalendar, faHandshake, faHand } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRight, faHome, faPlus, faAward, faBook, faSearch, faBasketball, faPencil, faDollar, faCalendar, faHandshake, faHand } from '@fortawesome/free-solid-svg-icons'
 
 const Query = (props) => {
 
@@ -14,6 +14,8 @@ const Query = (props) => {
     const [chosenStrategy, setChosenStrategy] = useState({});
     const [players, setPlayers] = useState([]);
     const [playerSearch, setPlayerSearch] = useState("");
+    const [startDate, setStartDate] = useState("2012-10-30");
+    const [endDate, setEndDate] = useState("2019-04-10");
 
     const [formData, setFormData] = useState({})
 
@@ -47,6 +49,22 @@ const Query = (props) => {
 
     const handlePlayerChange = (event) => {
         setPlayerSearch(event.target.value.toLowerCase());
+    }
+
+    const runQuery = () => {
+        let location = "";
+        location += chosenStrategy["route"];
+        location += "?team=";
+        location += chosenTeam;
+        location += "&wager=" + wager;
+        location += "&startDate=" + startDate;
+        location += "&endDate=" + endDate;
+        location += "&betType=" + chosenWageStrategy["name"];
+        console.log(formData);
+        for (const form of Object.keys(formData)) {
+            location += "&" + form + `=${formData[form]}`
+        }
+        console.log(location);
     }
 
     const findFields = () => {
@@ -204,16 +222,12 @@ const Query = (props) => {
                             <div className="flex flex-wrap">
                                 {wageStrategies.map((strategy => 
                                     (<div>
-                                        <button onClick={ () => { strategy["name"] === chosenWageStrategy["name"] ? setChosenStrategy("") : setChosenStrategy(strategy) }} 
+                                        <button onClick={ () => { strategy["name"] === chosenWageStrategy["name"] ? setChosenStrategy("") : setChosenWageStrategy(strategy) }} 
                                             className={`divide-y divide-black hover:divide-green-400 border-black hover:bg-black hover:text-green-400
                                                         rounded-lg border-2 p-2 m-2 ${strategy["name"] === chosenWageStrategy["name"] ? "bg-black text-white divide-white" : ""}`}>
                                             <p className="text-3xl mb-2 font-bold">{strategy["name"]}</p>
                                             <p className="pt-2">{strategy["description"]}</p>
                                         </button>
-                                        <br></br>
-                                        {Object.keys(chosenWageStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Date"); findFields() } }
-                                        className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
-                                            text-white hover:bg-white hover:text-green-400`}>Next Step: Date <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                                     </div>)
                                 ))}
                             </div>
@@ -244,8 +258,21 @@ const Query = (props) => {
                                 </ul>
                                 </div>
                             </div>
+                            <br></br>
+                            {Object.keys(chosenWageStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Date"); findFields() } }
+                            className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
+                                text-white hover:bg-white hover:text-green-400`}>Next Step: Date <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                             </div>
-                        </div>) : (<div></div>)}</div>
+                        </div>) : (<div><div className="mt-2 flex space-x-10">
+                            <input value={startDate} onChange={(event) => {setStartDate(event.target.value)}} min="2012-10-30" max="2019-04-10" className="w-1/2 accent-green-400 p-2 selection:bg-green-400 border-black border-2 focus:border-green-400 rounded-lg color-scheme-green-400" type="date"></input>
+                            <input value={endDate} onChange={(event) => {setEndDate(event.target.value)}} min={startDate} max="2019-04-10" className="w-1/2 accent-green-400 p-2 selection:bg-green-400 border-black border-2 focus:border-green-400 rounded-lg color-scheme-green-400" type="date"></input>
+                        </div>
+                        <button onClick={ () => { runQuery() } }
+                            className={`border-green-400 bg-green-400 border-2 mt-6 mb-6 p-2 rounded-lg 
+                                text-white hover:bg-white hover:text-green-400`}>Run Query <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button>
+                        </div>)}
+                        
+                        </div>
                     }
             </div>
         </div>
