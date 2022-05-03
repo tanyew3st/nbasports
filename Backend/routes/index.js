@@ -284,11 +284,11 @@ router.get('/favored', function(req, res) {
          FROM GameOdds
          WHERE (AwayOdds < 0))
       ), FavoredWins AS (
-         SELECT GameId, GameDate, HomeTeam, AwayTeam, FavoredTeam, HomeOdds, AwayOdds, 1 AS FavoredWins
+         SELECT GameId, GameDate AS Date, HomeTeam AS Home, AwayTeam AS Away, FavoredTeam AS Bet, HomeOdds, AwayOdds, 'W' AS Win
          FROM GameOddsWithFavored
          WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
       ), FavoredLosses AS (
-         SELECT GameId, GameDate, HomeTeam, AwayTeam, FavoredTeam, HomeOdds, AwayOdds, 0 AS FavoredWins
+         SELECT GameId, GameDate AS Date, HomeTeam AS Home, AwayTeam AS Away, FavoredTeam AS Bet, HomeOdds, AwayOdds, 'L' AS Win
          FROM GameOddsWithFavored
          WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
       ), UnionBoth AS (
@@ -300,8 +300,9 @@ router.get('/favored', function(req, res) {
       )
       SELECT *
       FROM UnionBoth
-      WHERE GameDate >= '${startDate}' AND GameDate <= '${finalDate}' AND FavoredTeam= '${team}'
-      ORDER BY GameDate;
+      WHERE Date >= '${startDate}' AND Date <= '${finalDate}' AND Bet='${team}'
+      ORDER BY Date;
+      
       
       
    
@@ -311,111 +312,11 @@ router.get('/favored', function(req, res) {
          res.json({error: error})
        }
        else if (results) {
-         let winnings = 0;
-         count = 0;
-         if (betType == "Constant")
-         {
-         for (let i = 0; i  < results.length; i++)
-         {
-            results[i].wager = wager;
-            if (results[i].FavoredWins == 1)
-            {
-               if (results[i].HomeOdds < 0)
-               {
-                  
-                    winnings = ((-100 / (results[i].HomeOdds)) * wager) + winnings
-                    results[i].amountwon = ((-100 / (results[i].HomeOdds)) * wager) 
-                    results[i].totalwinnings = winnings;
-               }
-               else if (results[i].AwayOdds < 0)
-               {
-                   winnings = ((-100 / (results[i].AwayOdds)) * wager) + winnings
-                   results[i].amountwon = ((-100 / (results[i].AwayOdds)) * wager) 
-                    results[i].totalwinnings = winnings;
-               }
-             
-            }
-            else
-            {
-                 winnings = winnings - wager
-                 results[i].amountwon = -wager;
-                 results[i].totalwinnings = winnings;
-            }
-            count++;
-         }
-         }
-         else if (betType == "Increment")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {  
-              if (results[i].FavoredWins == 1)
-              {
-                 if (results[i].HomeOdds < 0)
-                 {
-                    
-                      winnings = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1))) + winnings
-                      results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1)));
-                      results[i].totalwinnings = winnings;
-                      results[i].wager = (wager * (count + 1));
-                 }
-                 else if (results[i].AwayOdds < 0)
-                 {
-                     winnings = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1))) + winnings
-                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1)));
-                      results[i].totalwinnings = winnings;
-                      results[i].wager = (wager * (count + 1));
-                 }
-               
-              }
-              else
-              {
-                   winnings = winnings - (wager * (count + 1));
-                   results[i].amountwon = - (wager * (count + 1));
-                      results[i].totalwinnings = winnings;
-                      results[i].wager = (wager * (count + 1));
-              }
-              count++;
-           }
-         }
-         else if (betType == "Doubling")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-
-              if (results[i].FavoredWins == 1)
-              {
-                 if (results[i].HomeOdds < 0)
-                 {
-                      winnings = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1)))) + winnings
-                      results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1))));
-                      results[i].totalwinnings = winnings;
-                      results[i].wager = (wager * (2 *  (count + 1)));
-                 }
-                 else if (results[i].AwayOdds < 0)
-                 {
-                     winnings = ((-100 / (results[i].AwayOdds)) *  (wager * (2 *  (count + 1)))) + winnings
-                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (2 *  (count + 1))));
-                      results[i].totalwinnings = winnings;
-                      results[i].wager = (wager * (2 *  (count + 1)));
-                 }
-               
-              }
-              else
-              {
-                   winnings = winnings -  (wager * (2 *  (count + 1)));
-                   results[i].amountwon = -  (wager * (2 *  (count + 1)));
-                      results[i].totalwinnings = winnings;
-                      results[i].wager = (wager * (2 *  (count + 1)));
-              }
-              count++;
-           }
-         }
- 
-         res.json({finalwinnings: winnings, results: results})
-         console.log(count)
- 
        
-        
+         results = addingWage(results, betType, wager);
+ 
+         res.json({results: results})
+         
        }
      });
  
@@ -436,154 +337,52 @@ router.get('/unfavored', function(req, res) {
  
      connection.query(`WITH OddsWin AS (
       SELECT O.TeamId as oti, O.GameId AS GameID, O.BestLineML AS BestLineML, O.Result, T.TeamId, T.Nickname AS Nickname
-        FROM Odds O, Teams T
+      FROM Odds O, Teams T
       WHERE T.TeamId = O.TeamId
-      ), GameOdds AS (
-         SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BestLineML AS HomeOdds, AOdds.BestLineML AS AwayOdds, HOdds.Result AS HomeResult
-         FROM OddsWin HOdds, Games G, OddsWin AOdds
-         WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
-      ), GameOddsWithFavored AS (
-         (SELECT *, AwayTeam AS UnfavoredTeam
-         FROM GameOdds
-         WHERE (HomeOdds < 0))
-         UNION
-         (SELECT *, HomeTeam AS UnfavoredTeam
-         FROM GameOdds
-         WHERE (AwayOdds < 0))
-      ), UnfavoredWins AS (
-         SELECT GameId, GameDate, HomeTeam, AwayTeam, UnfavoredTeam, HomeOdds, AwayOdds, 0 AS UnfavoredLosses
-         FROM GameOddsWithFavored
-         WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
-      ), UnfavoredLosses AS (
-         SELECT GameId, GameDate, HomeTeam, AwayTeam, UnfavoredTeam, HomeOdds, AwayOdds, 1 as UnfavoredWins
-         FROM GameOddsWithFavored
-         WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
-      ), UnionBoth AS (
-         SELECT *
-         FROM UnfavoredLosses
-         UNION
-         SELECT *
-         FROM UnfavoredWins
-      )
-      SELECT *
-      FROM UnionBoth
-      WHERE GameDate >='${startDate}' AND GameDate <= '${finalDate}' AND UnfavoredTeam='${team}'
-      ORDER BY GameDate;
+  ), GameOdds AS (
+     SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BestLineML AS HomeOdds, AOdds.BestLineML AS AwayOdds, HOdds.Result AS HomeResult
+     FROM OddsWin HOdds, Games G, OddsWin AOdds
+     WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
+  ), GameOddsWithFavored AS (
+     (SELECT *, AwayTeam AS UnfavoredTeam
+     FROM GameOdds
+     WHERE (HomeOdds < 0))
+     UNION
+     (SELECT *, HomeTeam AS UnfavoredTeam
+     FROM GameOdds
+     WHERE (AwayOdds < 0))
+  ), UnfavoredWins AS (
+     SELECT GameId, GameDate AS Date, HomeTeam AS Home, AwayTeam AS Away, UnfavoredTeam AS Bet, HomeOdds, AwayOdds, 'L' AS Win
+     FROM GameOddsWithFavored
+     WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
+  ), UnfavoredLosses AS (
+     SELECT GameId, GameDate AS Date, HomeTeam AS Home, AwayTeam AS Away, UnfavoredTeam AS Bet, HomeOdds, AwayOdds, 'W' as Win
+     FROM GameOddsWithFavored
+     WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
+  ), UnionBoth AS (
+     SELECT *
+     FROM UnfavoredLosses
+     UNION
+     SELECT *
+     FROM UnfavoredWins
+  )
+  SELECT *
+  FROM UnionBoth
+  WHERE Date >= '${startDate}' AND Date <= '${finalDate}' AND Bet ='${team}'
+  ORDER BY Date;
+  
       
       
-      
-      
-   
      `, function(error, results, fields) {
        if (error) {
          console.log(error)
          res.json({error: error})
        }
        else if (results) {
-         let winnings = 0;
-         count = 0;
- 
-         if (betType == "Constant")
-         {
-         for (let i = 0; i  < results.length; i++)
-         {
-            results[i].wager = wager;
-            if (results[i].UnfavoredWins == 1)
-            {
-               if (results[i].HomeOdds < 0)
-               {
-                  
-                    winnings = ((-100 / (results[i].HomeOdds)) * wager) + winnings
-                    results[i].amountwon = ((-100 / (results[i].HomeOdds)) * wager) 
-                    results[i].totalwinnings = winnings;
-               }
-               else if (results[i].AwayOdds < 0)
-               {
-                   winnings = ((-100 / (results[i].AwayOdds)) * wager) + winnings
-                   results[i].amountwon = ((-100 / (results[i].AwayOdds)) * wager) 
-                    results[i].totalwinnings = winnings;
-               }
-             
-            }
-            else
-            {
-                 winnings = winnings - wager
-                 results[i].amountwon = -wager;
-                  results[i].totalwinnings = winnings;
-            }
-            count++;
-         }
-         }
-         else if (betType == "Increment")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-              
-              if (results[i].UnfavoredWins == 1)
-              {
-                 if (results[i].HomeOdds < 0)
-                 {
-                    
-                      winnings = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1))) + winnings
-                      results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1)))
-                      results[i].totalwinnings = winnings;
-                      results[i].wager = (wager * (count + 1));
-                 }
-                 else if (results[i].AwayOdds < 0)
-                 {
-                     winnings = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1))) + winnings
-                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1)))
-                    results[i].totalwinnings = winnings;
-                    results[i].wager = (wager * (count + 1));
-                 }
-               
-              }
-              else
-              {
-                   winnings = winnings - (wager * (count + 1));
-                   results[i].amountwon = - (wager * (count + 1));
-                    results[i].totalwinnings = winnings;
-                    results[i].wager = (wager * (count + 1));
-              }
-              count++;
-           }
-         }
-         else if (betType == "Doubling")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-              if (results[i].UnfavoredWins == 1)
-              {
-                 if (results[i].HomeOdds < 0)
-                 {
-                    
-                      winnings = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1)))) + winnings
-                      results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1))))
-                      results[i].totalwinnings = winnings;
-                     results[i].wager =(wager * (2 *  (count + 1)));
-                 }
-                 else if (results[i].AwayOdds < 0)
-                 {
-                     winnings = ((-100 / (results[i].AwayOdds)) *  (wager * (2 *  (count + 1)))) + winnings
-                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (2 *  (count + 1))))
-                      results[i].totalwinnings = winnings;
-                     results[i].wager =(wager * (2 *  (count + 1)));
-                 }
-               
-              }
-              else
-              {
-                   winnings = winnings -  (wager * (2 *  (count + 1)))
-                   results[i].amountwon = -  (wager * (2 *  (count + 1)))
-                      results[i].totalwinnings = winnings;
-                     results[i].wager = (wager * (2 *  (count + 1)));
-              }
-              count++;
-           }
-         }
- 
-         res.json({finalwinnings:  winnings, results: results})
-         console.log(winnings)
+
+        results = addingWage(results, betType, wager);
+        
+        res.json({results: results})
  
        
         
@@ -811,45 +610,43 @@ router.get('/ifbetplayer', function(req, res) {
  const wager = req.query.wager ? req.query.wager : 100
  const player = req.query.player ? req.query.player: 'Stephen Curry'
  const numPoints = req.query.points ? req.query.points: 20
- const team = req.query.team ? req.query.team: 'Golden State'
+ const team = req.query.team ? req.query.team: 'Warriors'
  const startDate = req.query.start? req.query.start: "2012-10-30"
   const finalDate = req.query.end? req.query.end : "2019-04-10"
    console.log(wager)
  
      connection.query(`WITH HomeTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, O.Team AS HomeTeam, O.Opponent AS AwayTeam, O.Result AS BettedResult, O.GameID AS GameID, O.BestLineML AS BettedAverageLineML
-      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID
-      WHERE O.Team = '${team}' AND O.Location = 'Home'
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.BestLineML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
+      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
+      WHERE O.Location = 'Home' AND GD.PlayerName = '${player}'
       ORDER BY O.Date ASC
      ), AwayTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName,O.Opponent AS HomeTeam, O.Team AS AwayTeam, O.Result AS BettedResult, O.GameID AS GameID, O.BestLineML AS BettedAverageLineML
-      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID
-      WHERE O.Team = '${team}'AND O.Location = 'Away'
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.BestLineML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
+      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
+      WHERE O.Location = 'Away' AND GD.PlayerName = '${player}'
       ORDER BY O.Date ASC
      ), PlayerToTeam AS (
         SELECT DISTINCT p.PLAYER_NAME AS PlayerName, o.Team AS Team
-        FROM Players p JOIN Odds o ON p.TEAM_ID = o.TeamId
+        FROM Players p JOIN Odds o ON p.TEAM_ID = o.TeamId JOIN Teams T ON o.TeamId = T.TeamId
+        WHERE p.PLAYER_NAME = '${player}' AND T.Nickname = '${team}'
      ), UnionHomeAway AS (
-        SELECT *
-        FROM HomeTeam H
-        WHERE H.PlayerName = '${player}' AND EXISTS (SELECT * FROM PlayerToTeam WHERE PlayerName = '${player}' AND Team = '${team}')
-        UNION
-        SELECT *
-        FROM AwayTeam A
-        WHERE A.PlayerName = '${player}' AND EXISTS (SELECT * FROM PlayerToTeam WHERE PlayerName = '${player}' AND Team = '${team}')
+        SELECT A.Date, A.BettedTeam, A.PTS, A.GameID, A.PlayerName, H.HomeTeam, A.AwayTeam, A.BettedResult, H.HomeOdds, A.AwayOdds
+        FROM HomeTeam H JOIN AwayTeam A ON H.GameID = A.GameID AND H.PlayerName = A.PlayerName
+        WHERE H.PlayerName = '${player}' AND EXISTS (SELECT * FROM PlayerToTeam)
      ), NumberedRows AS (
-        SELECT ROW_NUMBER() OVER(ORDER BY O.Date) AS RowNumber, O.Date AS Date, '${team}' AS BettedTeam, O.PTS as PTS, O.PlayerName AS PlayerName, O.HomeTeam AS HomeTeam,
-             O.AwayTeam AS AwayTeam, O.BettedResult AS BettedResult, O.GameID AS GameID, O.BettedAverageLineML AS BettedAverageLineML
+        SELECT ROW_NUMBER() OVER(ORDER BY O.Date) AS RowNumber, O.GameID, O.Date AS Date, '${team}' AS BettedTeam, O.PTS as PTS, O.PlayerName AS PlayerName, O.HomeTeam AS HomeTeam,
+             O.AwayTeam AS AwayTeam, O.BettedResult AS BettedResult, O.HomeOdds, O.AwayOdds
         FROM UnionHomeAway O
         ORDER BY O.Date
      ), CartesianProduct AS (
-      SELECT A.Date, A.BettedTeam AS BettedTeam, A.HomeTeam, A.AwayTeam, A.BettedAverageLineML, A.BettedResult AS BetResult
-      FROM NumberedRows A,  NumberedRows B
-      WHERE A.RowNumber = (B.RowNumber - 1) AND B.PTS >= '${numPoints}'
+        SELECT A.GameID, A.Date, A.HomeTeam AS Home, A.AwayTeam AS Away, A.BettedTeam AS Bet, A.HomeOdds, A.AwayOdds, A.BettedResult AS Win
+        FROM NumberedRows A,  NumberedRows B
+        WHERE A.RowNumber = (B.RowNumber - 1) AND B.PTS >= '${numPoints}'
      )
      SELECT *
      FROM CartesianProduct
      WHERE Date >= '${startDate}' AND Date <= '${finalDate}';
+     
       
    
      `, function(error, results, fields) {
@@ -858,112 +655,9 @@ router.get('/ifbetplayer', function(req, res) {
          res.json({error: error})
        }
        else if (results) {
-         let winnings = 0;
-         count = 0;
-        
-         if (betType == "Constant")
-         {
-         for (let i = 0; i  < results.length; i++)
-         {
-            results[i].wager = wager;
-            if (results[i].BetResult == "W")
-            {
-               if (results[i].BettedAverageLineML < 0)
-               {
-                  
-                    winnings = ((-100 / (results[i].BettedAverageLineML)) * wager) + winnings
-                    results[i].amountwon = ((-100 / (results[i].BettedAverageLineML)) * wager);
-                    results[i].totalwinnings = winnings;
-                   
-               }
-               else if (results[i].BettedAverageLineML > 0)
-               {
-                   winnings = ((results[i].BettedAverageLineML / (100)) * wager) + winnings
-                   results[i].amountwon = ((results[i].BettedAverageLineML / (100)) * wager);
-                   results[i].totalwinnings = winnings;
-               }
-             
-            }
-            else
-            {
-                 winnings = winnings - wager
-                 results[i].amountwon = -wager;
-                results[i].totalwinnings = winnings;
-            }
-            count++;
-         }
-         }
-         else if (betType == "Increment")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-             if (results[i].BetResult == "W")
-              {
-               if (results[i].BettedAverageLineML < 0)
-                 {
-                    
-                   winnings = ((-100 / (results[i].BettedAverageLineML)) * (wager * (count + 1))) + winnings
-                   results[i].wager = (wager * (count + 1))
-                   results[i].amountwon = ((-100 / (results[i].BettedAverageLineML)) * (wager * (count + 1)));
-                   results[i].totalwinnings = winnings;
-                 }
-                 else if (results[i].BettedAverageLineML > 0)
-                 {
-                   winnings = ((results[i].BettedAverageLineML / (100)) * (wager * (count + 1))) + winnings
-                   results[i].wager = (wager * (count + 1))
-                   results[i].amountwon = ((results[i].BettedAverageLineML / (100)) * (wager * (count + 1)));
-                   results[i].totalwinnings = winnings;
-                 }
-               
-              }
-              else
-              {
-                   winnings = winnings - (wager * (count + 1))
-                   results[i].wager = (wager * (count + 1))
-                   results[i].amountwon = -(wager * (count + 1));
-                   results[i].totalwinnings = winnings;
-              }
-              count++;
-           }
-         }
-         else if (betType == "Doubling")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-             if (results[i].BetResult == "W")
-              {
-               if (results[i].BettedAverageLineML < 0)
-                 {
-                    
-                   winnings = ((-100 / (results[i].BettedAverageLineML)) * (wager * (2 *  (count + 1)))) + winnings
-                   results[i].wager = (wager * (2 *  (count + 1)))
-                   results[i].amountwon = ((-100 / (results[i].BettedAverageLineML)) * (wager * (2 *  (count + 1))))
-                   results[i].totalwinnings = winnings;
-                 }
-                 else if (results[i].BettedAverageLineML > 0)
-                 {
-                   winnings = ((results[i].BettedAverageLineML / (100)) *  (wager * (2 *  (count + 1)))) + winnings
-                   results[i].wager = (wager * (2 *  (count + 1)))
-                   results[i].amountwon = ((results[i].BettedAverageLineML / (100)) *  (wager * (2 *  (count + 1))))
-                   results[i].totalwinnings = winnings;
-                 }
-               
-              }
-              else
-              {
-                   winnings = winnings -  (wager * (2 *  (count + 1)))
-                   results[i].wager = (wager * (2 *  (count + 1)))
-                   results[i].amountwon = -(wager * (2 *  (count + 1)))
-                   results[i].totalwinnings = winnings;
-              }
-              count++;
-           }
-         }
- 
-         res.json({finalwinnings: winnings, results: results})
-         console.log(winnings)
-       
- 
+         
+         results = addingWage(results, betType, wager)
+         res.json({results: results})
        
         
        }
@@ -981,15 +675,27 @@ router.get('/ifbethome', function(req, res) {
  const betType = req.query.betType ? req.query.betType : "Constant"
  const wager = req.query.wager ? req.query.wager : 100
  const team = req.query.team ? req.query.team: 'Warriors'
+ const startDate = req.query.start? req.query.start: "2012-10-30"
+  const finalDate = req.query.end? req.query.end : "2019-04-10"
    console.log(wager)
    
-     connection.query(`SELECT G.GameDate, G.GameID, G.HomeWin, O.BestLineML AS Odds
-     FROM Games G JOIN Odds O ON (G.GameID = O.GameID)
-     WHERE G.HomeTeamID IN (
-         SELECT TeamId
-         FROM Teams
-         WHERE (Nickname = '${team}')) AND (O.Location = 'home')
-         ORDER BY (G.GameDate)
+     connection.query(`WITH RenameHome AS (
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+      FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+      WHERE O.Location = 'home'
+  ), RenameAway AS (
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+      FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+      WHERE O.Location = 'away'
+  ), JoinHomeAway AS (
+      SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
+      FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+  )
+  SELECT *
+  FROM JoinHomeAway J
+  WHERE J.Home = '${team}' AND Date >='${startDate}' AND Date <= '${finalDate}'
+  ORDER BY Date;
+  
     
    
      `, function(error, results, fields) {
@@ -998,115 +704,10 @@ router.get('/ifbethome', function(req, res) {
          res.json({error: error})
        }
        else if (results) {
-         let winnings = 0;
-         count = 0;
-        
-         if (betType == "Constant")
-         {
-         for (let i = 0; i  < results.length; i++)
-         {
-            results[i].wager = wager;
-            if (results[i].HomeWin == 1)
-            {
-               if (results[i].Odds < 0)
-               {
-                  
-                    winnings = ((-100 / (results[i].Odds)) * wager) + winnings
-                    results[i].amountwon = ((-100 / (results[i].Odds)) * wager)
-                    results[i].totalwinnings = winnings;
-                   
-               }
-               else if (results[i].Odds > 0)
-               {
-                   winnings = ((results[i].Odds / (100)) * wager) + winnings
-                   results[i].amountwon = ((results[i].Odds / (100)) * wager)
-                   results[i].totalwinnings = winnings;
-               }
-             
-            }
-            else
-            {
-                 winnings = winnings - wager
-                 results[i].amountwon = -wager;
-                 results[i].totalwinnings = winnings;
-            }
-            count++;
-         }
-         }
-         else if (betType == "Increment")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-             if (results[i].HomeWin == 1)
-              {
-               if (results[i].Odds < 0)
-                 {
-                    
-                   winnings = ((-100 / (results[i].Odds)) * (wager * (count + 1))) + winnings
-                   results[i].wager = (wager * (count + 1))
-                   results[i].amountwon = ((-100 / (results[i].Odds)) * (wager * (count + 1)))
-                   results[i].totalwinnings = winnings;
-                 }
-                 else if (results[i].Odds > 0)
-                 {
-                   winnings = ((results[i].Odds / (100)) * (wager * (count + 1))) + winnings
-                   results[i].wager = (wager * (count + 1))
-                   results[i].amountwon = ((results[i].Odds / (100)) * (wager * (count + 1)))
-                   results[i].totalwinnings = winnings;
-                 }
-               
-              }
-              else
-              {
-                   winnings = winnings - (wager * (count + 1))
-                   results[i].wager = (wager * (count + 1))
-                   results[i].amountwon = -(wager * (count + 1))
-                   results[i].totalwinnings = winnings;
-              }
-              count++;
-           }
-         }
-         else if (betType == "Doubling")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-             if (results[i].HomeWin == 1)
-              {
-               if (results[i].Odds < 0)
-                 {
-                    
-                   winnings = ((-100 / (results[i].Odds)) * (wager * (2 *  (count + 1)))) + winnings
-                   results[i].wager = (wager * (2 *  (count + 1)))
-                   results[i].amountwon = ((-100 / (results[i].Odds)) * (wager * (2 *  (count + 1)))) 
-                   results[i].totalwinnings = winnings;
-                 }
-                 else if (results[i].Odds > 0)
-                 {
-                   winnings = ((results[i].Odds / (100)) *  (wager * (2 *  (count + 1)))) + winnings
-                   results[i].wager = (wager * (2 *  (count + 1)))
-                   results[i].amountwon = ((results[i].Odds / (100)) *  (wager * (2 *  (count + 1))))
-                   results[i].totalwinnings = winnings;
-                 }
-               
-              }
-              else
-              {
-                   winnings = winnings -  (wager * (2 *  (count + 1)))
-                   results[i].wager = (wager * (2 *  (count + 1)))
-                   results[i].amountwon = -(wager * (2 *  (count + 1)))
-                   results[i].totalwinnings = winnings;
-              }
-              count++;
-           }
-         }
- 
-         res.json({finalwinnings:  winnings, results: results})
-         console.log(winnings)
-         console.log(count)
- 
-       
-        
+         results = addingWage(results, betType, wager)
+         res.json({results: results})
        }
+         
      });
  
  
@@ -1121,125 +722,37 @@ router.get('/ifbetaway', function(req, res) {
  const betType = req.query.betType ? req.query.betType : "Constant"
  const wager = req.query.wager ? req.query.wager : 100
  const team = req.query.team ? req.query.team: 'Warriors'
+ const startDate = req.query.start? req.query.start: "2012-10-30"
+ const finalDate = req.query.end? req.query.end : "2019-04-10"
    console.log(wager)
  
-     connection.query(`SELECT G.GameDate, G.GameID, G.HomeWin AS AwayLose, O.BestLineML AS Odds
-     FROM Games G JOIN Odds O ON (G.GameID = O.GameID)
-     WHERE G.VisitorTeamID IN (
-         SELECT TeamId
-         FROM Teams
-         WHERE (Nickname = '${team}')) AND (O.Location = 'away')
-         ORDER BY G.GameDate
+     connection.query(`WITH RenameHome AS (
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+      FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+      WHERE O.Location = 'home'
+  ), RenameAway AS (
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+      FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+      WHERE O.Location = 'away'
+  ), JoinHomeAway AS (
+      SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away,  '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home =  '${team}', H.Win, A.Win) AS Win
+      FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+  )
+  SELECT *
+  FROM JoinHomeAway J
+  WHERE J.Away =  '${team}' AND Date >='${startDate}' AND Date <= '${finalDate}'
+  ORDER BY Date;
+  
      `, function(error, results, fields) {
        if (error) {
          console.log(error)
          res.json({error: error})
        }
        else if (results) {
-         let winnings = 0;
-         count = 0;
         
-         if (betType == "Constant")
-         {
-         for (let i = 0; i  < results.length; i++)
-         {
-            results[i].wager = wager;
-            if (results[i].AwayLose == 0)
-            {
-               if (results[i].Odds < 0)
-               {
-                  
-                    winnings = ((-100 / (results[i].Odds)) * wager) + winnings
-                    results[i].amountwon = ((-100 / (results[i].Odds)) * wager)
-                    results[i].totalwinnings = winnings;
-                   
-               }
-               else if (results[i].Odds > 0)
-               {
-                   winnings = ((results[i].Odds / (100)) * wager) + winnings
-                   results[i].amountwon = ((results[i].Odds / (100)) * wager)
-                   results[i].totalwinnings = winnings;
-               }
-             
-            }
-            else
-            {
-                 winnings = winnings - wager
-                 results[i].amountwon = -wager
-                   results[i].totalwinnings = winnings;
-            }
-            count++;
-         }
-         }
-         else if (betType == "Increment")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-             if (results[i].AwayLose== 0)
-              {
-               if (results[i].Odds < 0)
-                 {
-                    
-                   winnings = ((-100 / (results[i].Odds)) * (wager * (count + 1))) + winnings
-                   results[i].wager = (wager * (count + 1))
-                   results[i].amountwon = ((-100 / (results[i].Odds)) * (wager * (count + 1)))
-                   results[i].totalwinnings = winnings;
-                      }
-                 }
-                 else if (results[i].Odds > 0)
-                 {
-                   winnings = ((results[i].Odds / (100)) * (wager * (count + 1))) + winnings
-                   results[i].wager = (wager * (count + 1))
-                   results[i].amountwon = ((results[i].Odds / (100)) * (wager * (count + 1)))
-                   results[i].totalwinnings = winnings;
-                 }
-               
-              else
-              {
-                   winnings = winnings - (wager * (count + 1))
-                   results[i].wager = (wager * (count + 1))
-                   results[i].amountwon = -(wager * (count + 1))
-                   results[i].totalwinnings = winnings;
-              }
-              count++;
-           }
-         }
-         else if (betType == "Doubling")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-             if (results[i].AwayLose== 0)
-              {
-               if (results[i].Odds < 0)
-                 {
-                    
-                   winnings = ((-100 / (results[i].Odds)) * (wager * (2 *  (count + 1)))) + winnings
-                   results[i].wager = (wager * (2 *  (count + 1)))
-                   results[i].amountwon = ((-100 / (results[i].Odds)) * (wager * (2 *  (count + 1)))) 
-                   results[i].totalwinnings = winnings;
-                 }
-                 else if (results[i].Odds > 0)
-                 {
-                   winnings = ((results[i].Odds / (100)) *  (wager * (2 *  (count + 1)))) + winnings
-                     if (count % 1 == 0)
-                     results[i].wager = (wager * (2 *  (count + 1)))
-                   results[i].amountwon = ((results[i].Odds / (100)) *  (wager * (2 *  (count + 1))))
-                   results[i].totalwinnings = winnings;
-                 }
-               
-              }
-              else
-              {
-                   winnings = winnings -  (wager * (2 *  (count + 1)))
-                   results[i].wager = (wager * (2 *  (count + 1)))
-                   results[i].amountwon = -(wager * (2 *  (count + 1)))
-                   results[i].totalwinnings = winnings;
-              }
-              count++;
-           }
-         }
+        results = addingWage(results, betType, wager)
  
-         res.json({finalwinnings:  winnings, results: results})
+         res.json({results: results})
          
  
        
@@ -1362,6 +875,172 @@ router.get('/playersonteam', function(req, res) {
 
 });
  
+function addingWage(results, betType, wager)
+{
+  count = 0;
+  winnings = 0;
+  if (betType == "Constant")
+         {
+         for (let i = 0; i  < results.length; i++)
+         {
+            results[i].wager = wager;
+            if (results[i].Win == "W")
+            {
+               if (results[i].Bet == results[i].Home)
+               {
+                if (results[i].HomeOdds < 0)
+                {
+                   
+                     winnings = ((-100 / (results[i].HomeOdds)) * wager) + winnings
+                     results[i].amountwon = ((-100 / (results[i].HomeOdds)) * wager);
+                     results[i].totalwinnings = winnings;
+                    
+                }
+                else
+                {
+                  winnings = ((results[i].HomeOdds / (100)) * wager) + winnings
+                  results[i].amountwon = ((results[i].HomeOdds / (100)) * wager);
+                  results[i].totalwinnings = winnings;
+
+                }
+               }
+               else
+               {
+                if (results[i].AwayOdds < 0)
+                {
+                   
+                     winnings = ((-100 / (results[i].AwayOdds)) * wager) + winnings
+                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * wager);
+                     results[i].totalwinnings = winnings;
+                    
+                }
+                else
+                {
+                  winnings = ((results[i].AwayOdds / (100)) * wager) + winnings
+                  results[i].amountwon = ((results[i].AwayOdds / (100)) * wager);
+                  results[i].totalwinnings = winnings;
+
+                }
+               }
+            }
+            else
+            {
+                 winnings = winnings - wager
+                 results[i].amountwon = -wager;
+                results[i].totalwinnings = winnings;
+            }
+            count++;
+         }
+         }
+         else if (betType == "Increment")
+         {
+           for (let i = 0; i  < results.length; i++)
+           {
+            results[i].wager = (wager * (count + 1));
+            if (results[i].Win == "W")
+            {
+               if (results[i].Bet == results[i].Home)
+               {
+                if (results[i].HomeOdds < 0)
+                {
+                   
+                     winnings = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1))) + winnings
+                     results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1)));
+                     results[i].totalwinnings = winnings;
+                    
+                }
+                else
+                {
+                  winnings = ((results[i].HomeOdds / (100)) *(wager * (count + 1))) + winnings
+                  results[i].amountwon = ((results[i].HomeOdds / (100)) * (wager * (count + 1)));
+                  results[i].totalwinnings = winnings;
+
+                }
+               }
+               else
+               {
+                if (results[i].AwayOdds < 0)
+                {
+                   
+                     winnings = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1))) + winnings
+                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1)));
+                     results[i].totalwinnings = winnings;
+                    
+                }
+                else
+                {
+                  winnings = ((results[i].AwayOdds / (100)) * (wager * (count + 1))) + winnings
+                  results[i].amountwon = ((results[i].AwayOdds / (100)) * (wager * (count + 1)));
+                  results[i].totalwinnings = winnings;
+
+                }
+               }
+            }
+            else
+            {
+                 winnings = winnings - (wager * (count + 1))
+                 results[i].amountwon = -(wager * (count + 1));
+                results[i].totalwinnings = winnings;
+            }
+            count++;
+         }
+         }
+         else if (betType == "Doubling")
+         {
+           for (let i = 0; i  < results.length; i++)
+           {
+            results[i].wager = (wager * (2 *  (count + 1)));
+            if (results[i].Win == "W")
+            {
+               if (results[i].Bet == results[i].Home)
+               {
+                if (results[i].HomeOdds < 0)
+                {
+                   
+                     winnings = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1)))) + winnings
+                     results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1))));
+                     results[i].totalwinnings = winnings;
+                    
+                }
+                else
+                {
+                  winnings = ((results[i].HomeOdds / (100)) * (wager * (2 *  (count + 1)))) + winnings
+                  results[i].amountwon = ((results[i].HomeOdds / (100)) * (wager * (2 *  (count + 1))));
+                  results[i].totalwinnings = winnings;
+
+                }
+               }
+               else
+               {
+                if (results[i].AwayOdds < 0)
+                {
+                   
+                     winnings = ((-100 / (results[i].AwayOdds)) * (wager * (2 *  (count + 1)))) + winnings
+                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (2 *  (count + 1))));
+                     results[i].totalwinnings = winnings;
+                    
+                }
+                else
+                {
+                  winnings = ((results[i].AwayOdds / (100)) * (wager * (2 *  (count + 1)))) + winnings
+                  results[i].amountwon = ((results[i].AwayOdds / (100)) * (wager * (2 *  (count + 1))));
+                  results[i].totalwinnings = winnings;
+
+                }
+               }
+            }
+            else
+            {
+                 winnings = winnings - (wager * (2 *  (count + 1)))
+                 results[i].amountwon = -(wager * (2 *  (count + 1)));
+                results[i].totalwinnings = winnings;
+            }
+            count++;
+         }
+         }
+
+         return results;
+}
  
 module.exports = router;
  
