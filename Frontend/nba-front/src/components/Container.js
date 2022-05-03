@@ -11,7 +11,6 @@ const Container = (props) => {
     const [currentState, setCurrentState] = props.currentState;
 
     return <Fragment>
-        {currentState}
         <div className="flex flex-row h-screen overflow-y-scroll">
             <div className="basis-1/4 h-full">
                 <Sidebar currentState={[currentState, setCurrentState]}>
