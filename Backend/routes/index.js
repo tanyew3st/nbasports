@@ -268,11 +268,11 @@ router.get('/favored', function(req, res) {
   console.log(wager)
  
      connection.query(`WITH OddsWin AS (
-      SELECT O.TeamId as oti, O.GameId AS GameID, O.BestLineML AS BestLineML, O.Result, T.TeamId, T.Nickname AS Nickname
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.ML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O, Teams T
       WHERE T.TeamId = O.TeamId
       ), GameOdds AS (
-         SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BestLineML AS HomeOdds, AOdds.BestLineML AS AwayOdds, HOdds.Result AS HomeResult
+         SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.ML AS HomeOdds, AOdds.ML AS AwayOdds, HOdds.Result AS HomeResult
          FROM OddsWin HOdds, Games G, OddsWin AOdds
          WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
       ), GameOddsWithFavored AS (
@@ -336,11 +336,11 @@ router.get('/unfavored', function(req, res) {
   console.log(wager)
  
      connection.query(`WITH OddsWin AS (
-      SELECT O.TeamId as oti, O.GameId AS GameID, O.BestLineML AS BestLineML, O.Result, T.TeamId, T.Nickname AS Nickname
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.ML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
       FROM Odds O, Teams T
       WHERE T.TeamId = O.TeamId
   ), GameOdds AS (
-     SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BestLineML AS HomeOdds, AOdds.BestLineML AS AwayOdds, HOdds.Result AS HomeResult
+     SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.ML AS HomeOdds, AOdds.ML AS AwayOdds, HOdds.Result AS HomeResult
      FROM OddsWin HOdds, Games G, OddsWin AOdds
      WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
   ), GameOddsWithFavored AS (
@@ -616,12 +616,12 @@ router.get('/ifbetplayer', function(req, res) {
    console.log(wager)
  
      connection.query(`WITH HomeTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.BestLineML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.ML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
       FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
       WHERE O.Location = 'Home' AND GD.PlayerName = '${player}'
       ORDER BY O.Date ASC
      ), AwayTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.BestLineML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.ML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
       FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
       WHERE O.Location = 'Away' AND GD.PlayerName = '${player}'
       ORDER BY O.Date ASC
@@ -680,11 +680,11 @@ router.get('/ifbethome', function(req, res) {
    console.log(wager)
    
      connection.query(`WITH RenameHome AS (
-      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.ML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'home'
   ), RenameAway AS (
-      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.ML AS AwayOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'away'
   ), JoinHomeAway AS (
@@ -727,11 +727,11 @@ router.get('/ifbetaway', function(req, res) {
    console.log(wager)
  
      connection.query(`WITH RenameHome AS (
-      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.ML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'home'
   ), RenameAway AS (
-      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.ML AS AwayOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'away'
   ), JoinHomeAway AS (
@@ -846,11 +846,32 @@ router.get('/onload', function(req, res) {
               },}, 
               {
                 "name": "Win Streak Bet",
-                "description": " Gets the data for various betting strategies, when the user bets on the team on a win streak over an interval",
+                "description": " Gets the data for various betting strategies, when the user bets on a team on a win streak over an interval",
                 "route": "winstreak",
                 "form" :
                 {
-                },},], 
+                },},
+                {
+                  "name": "Losing Streak Bet",
+                  "description": " Gets the data for various betting strategies, when the user bets on a team on a losing streak over an interval",
+                  "route": "losingstreak",
+                  "form" :
+                  {
+                  },},
+                  {
+                    "name": "Liked Team Bet",
+                    "description": " Gets the data for various betting strategies, when the user bets on a team they they like over an interval",
+                    "route": "likedteam",
+                    "form" :
+                    {
+                    },},
+                    {
+                      "name": "Home Recovery Bet",
+                      "description": " Gets the data for various betting strategies, when the user bets on a team that had a poor shooting performance in their previous game and are now at home over an interval",
+                      "route": "homerecovery",
+                      "form" :
+                      {
+                      },}], 
     "Wage Strategies" :
     [{
       "name": "Constant",
@@ -911,11 +932,11 @@ router.get('/zigzag', function(req, res) {
     console.log(wager)
     
       connection.query(`WITH RenameHome AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.ML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
     ), RenameAway AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.ML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
     ), JoinHomeAway AS (
@@ -969,11 +990,11 @@ router.get('/heavyfavorite', function(req, res) {
     console.log(wager)
     
       connection.query(`WITH OddsWithTeamNames AS (
-        SELECT O.TeamId as oti, O.GameId AS GameID, O.BestLineML AS BestLineML, O.Result, T.TeamId, T.Nickname AS Nickname
+        SELECT O.TeamId as oti, O.GameId AS GameID, O.ML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O, Teams T
         WHERE T.TeamId = O.TeamId
     ), GameOdds AS (
-        SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BestLineML AS HomeOdds, AOdds.BestLineML AS AwayOdds, HOdds.Result AS HomeResult
+        SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.ML AS HomeOdds, AOdds.ML AS AwayOdds, HOdds.Result AS HomeResult
         FROM OddsWithTeamNames HOdds, Games G, OddsWithTeamNames AOdds
         WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
     ), GameOddsWithFavored AS (
@@ -1001,7 +1022,7 @@ router.get('/heavyfavorite', function(req, res) {
     )
     SELECT GameID, GameDate AS Date, HomeTeam AS Home, AwayTeam as Away, HeavyFavoredTeam AS Bet, HomeOdds, AwayOdds, BetResult AS Win
     FROM UnionBoth
-    WHERE GameDate >= '${startDate}' AND GameDate <= '${finalDate}'  AND HeavyFavoredTeam = '${team}'
+    WHERE GameDate >= '${startDate}' AND GameDate <= '${finalDate}' AND HeavyFavoredTeam = '${team}'
     ORDER BY GameDate;
     
     
@@ -1027,7 +1048,7 @@ router.get('/heavyfavorite', function(req, res) {
 /* Request Path: “/winstreak?betType=&wager=&team=*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
 /* Query Parameters: team and dates, which denotes the team that we are betting on */
-/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is extremely favored and who scored for various wagers and betting strategies, along with the relevant game data */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is winning and who scored for various wagers and betting strategies, along with the relevant game data */
 router.get('/winstreak', function(req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
@@ -1037,35 +1058,153 @@ router.get('/winstreak', function(req, res) {
     console.log(wager)
     
       connection.query(`
-      WITH RenameHome AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+      
+    
+      `, function(error, results, fields) {
+        if (error) {
+          console.log(error)
+          res.json({error: error})
+        }
+        else if (results) {
+          results = addingWage(results, betType, wager)
+          res.json({results: results})
+        }
+          
+      });
+  
+  
+ });
+
+  /* Route #21: GETS the data for various betting strategies, when the user bets on a team given the team is on a large losing streak, specified by the odds  */
+/* Request Path: “/losingstreak?betType=&wager=&team=*/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
+/* Query Parameters: team, streak, and dates, which denotes the team that we are betting on */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is losing and who scored for various wagers and betting strategies, along with the relevant game data */
+router.get('/losingstreak', function(req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team: 'Warriors'
+  const startDate = req.query.start? req.query.start: "2012-10-30"
+   const finalDate = req.query.end? req.query.end : "2019-04-10"
+    console.log(wager)
+    
+      connection.query(`
+      
+    
+      `, function(error, results, fields) {
+        if (error) {
+          console.log(error)
+          res.json({error: error})
+        }
+        else if (results) {
+          results = addingWage(results, betType, wager)
+          res.json({results: results})
+        }
+          
+      });
+  
+  
+ });
+
+  /* Route #22: GETS the data for various betting strategies, when the user bets on a team given the that they like that team, specified by the odds  */
+/* Request Path: “/likedteam?betType=&wager=&team=*/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
+/* Query Parameters: team, and dates, which denotes the team that we are betting on */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is liked by the user and who scored for various wagers and betting strategies, along with the relevant game data */
+router.get('/likedteam', function(req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team: 'Warriors'
+  const startDate = req.query.start? req.query.start: "2012-10-30"
+   const finalDate = req.query.end? req.query.end : "2019-04-10"
+    console.log(wager)
+    
+      connection.query(`WITH RenameHome AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
     ), RenameAway AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
     ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = 'Celtics', H.Win, A.Win) AS Win
+        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
-    ), CreateCount AS (
-       SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
-              IF(o.Win = 'W', 1, 0) AS StreakCounter
-       FROM JoinHomeAway o
-       WHERE o.Home ='${team}' OR o.Away = '${team}'
-    ), AggregateStreakWins AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.Win, SUM(StreakCounter) OVER (
-           ORDER BY c.Date
-           ROWS 2 PRECEDING
-           ) AS AggregateStreak
-       FROM CreateCount c
-    ), ExclusiveOfCurrRow AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.Win, IF(c.Win = 'W', c.AggregateStreak - 1, c.AggregateStreak) AS PriorWinStreak
-       FROM AggregateStreakWins c
     )
-    SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.Win
-    FROM ExclusiveOfCurrRow c
-    WHERE c.PriorWinStreak >= 2 AND Date >= '${startDate}' AND Date <= '${finalDate}';
+    SELECT * FROM JoinHomeAway J
+    WHERE (J.Home = '${team}' OR J.Away = '${team}') AND J.Date <= '${finalDate}' AND J.Date >= '${startDate}';
+    
+      
+    
+      `, function(error, results, fields) {
+        if (error) {
+          console.log(error)
+          res.json({error: error})
+        }
+        else if (results) {
+          results = addingWage(results, betType, wager)
+          res.json({results: results})
+        }
+          
+      });
+  
+  
+ });
+
+  /* Route #23: GETS the data for various betting strategies, when the user bets on a team given they shot poorly in the previous game and are now at home, specified by the odds  */
+/* Request Path: “/homerecovery?betType=&wager=&team=*/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
+/* Query Parameters: team and dates, which denotes the team that we are betting on */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is recovering from a poor shooting performance and who scored for various wagers and betting strategies, along with the relevant game data */
+router.get('/homerecovery', function(req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team: 'Warriors'
+  const startDate = req.query.start? req.query.start: "2012-10-30"
+   const finalDate = req.query.end? req.query.end : "2019-04-10"
+    console.log(wager)
+    
+      connection.query(`WITH RenameHome AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.BetOnlineSpread as HomeSpread, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'home'
+    ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.BetOnlineSpread as AwaySpread, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'away'
+    ), JoinHomeAway AS (
+        SELECT ROW_NUMBER() OVER (ORDER BY H.GameID) AS RowNum, H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
+        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+        WHERE (H.Home = '${team}')
+    ), GameInfo AS (
+        SELECT G.GameDate, GameID, HomeTeamID, H.Nickname AS Home, HomePoints, VisitorTeamID, A.Nickname AS Away, HomeFGPCT, AwayFGPCT, HomeFG3PCT, AwayFG3PCT, AwayPoints
+        FROM Games G JOIN Teams H ON (H.TeamId = G.HomeTeamID)
+            JOIN Teams A ON (A.TeamId = G.VisitorTeamID)
+    ), Data AS (
+        SELECT G.GameID, IF(Home = '${team}', G.HomeFGPCT, G.AwayFGPCT) AS FGPCT, IF(Home = '${team}', G.HomePoints, G.AwayPoints) AS Points
+        FROM GameInfo G
+        WHERE (Home = '${team}' OR Away = '${team}')
+    ), Stats AS (
+        SELECT AVG(FGPCT) AS AvgFGPct, AVG(Points) AS AvgPoints, FORMAT(STD(FGPCT), 3) AS FGPctStDev, FORMAT(STD(Points), 3) AS PointsStDev
+        FROM Data
+    )
+    SELECT J.GameID, Date, Home, Away, Bet, HomeOdds, AwayOdds, Win
+    FROM JoinHomeAway J JOIN Data D ON (J.GameID = D.GameID)
+    WHERE (D.FGPCT <=  ALL (
+        SELECT (AvgFGPct - FGPctStDev)
+        FROM Stats S
+    )) AND (D.Points <=  ALL (
+        SELECT (AvgPoints - PointsStDev)
+        FROM Stats S
+    ))
+      AND EXISTS (
+        SELECT *
+        FROM JoinHomeAway J2
+        WHERE (J2.RowNum = J.RowNum + 1) AND (J2.Win = 'W')
+    )
+    
+    
+      
     
       `, function(error, results, fields) {
         if (error) {
