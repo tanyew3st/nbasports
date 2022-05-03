@@ -62,7 +62,8 @@ const Query = (props) => {
         location += "&betType=" + chosenWageStrategy["name"];
         console.log(formData);
         for (const form of Object.keys(formData)) {
-            location += "&" + form + `=${formData[form]}`
+            console.log("&" + form + `=${formData[form]}`);
+            location += "&" + form + `=${formData[form]}`;
         }
         window.location.href = "/query/" + location;
     }
@@ -75,7 +76,6 @@ const Query = (props) => {
             fetch("http://localhost:3000/playersonteam?team=" + chosenTeam)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data.results);
                     setPlayers(data.results);
                 });
         }
@@ -153,7 +153,7 @@ const Query = (props) => {
                                     </div>)
                                 ))}
                                 <div className="flex flex-row space-x-4 mt-4">
-                                    <button onClick={ () => { setCurrentState("Team"); findFields() } }
+                                    <button onClick={ () => { setCurrentState("Team"); } }
                                     className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
                                         text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Teams</button>
                                     {Object.keys(chosenStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Form"); findFields() } }
@@ -201,15 +201,20 @@ const Query = (props) => {
                                         focus:outline-none focus:ring-0 focus:shadow-none
                                         "id="customRange1"
                                         value={formData[f]}
-                                        onChange={(event) => {console.log(formData); 
-                                            const newFormData = {...formData};
-                                            newFormData[f] = event.target.value;
-                                            setFormData(newFormData)}}
+                                        onChange={(event) => {
+                                            setFormData((prev) => {
+                                                const newFormData = {...prev};
+                                                console.log(f);
+                                                newFormData[f] = event.target.value;
+                                                console.log(newFormData);
+                                                return newFormData;
+                                            }
+                                            )}}
                                         min={0} max={150} step={1}
                                     />
                                     <ul class="flex justify-between w-full">
                                         <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">0</span></li>
-                                        <li class="flex justify-center relative font-bold text-xl">Current: {formData[f]}</li>
+                                        <li class="animate-pulse flex justify-center relative font-bold text-xl">Current: {formData[f]}</li>
                                         <li class="flex justify-center relative font-bold text-xl mr-2"><span class="absolute">150</span></li>
                                     </ul>
                                     </div>
@@ -231,16 +236,21 @@ const Query = (props) => {
                                             focus:outline-none focus:ring-0 focus:shadow-none
                                             "id="customRange1"
                                             value={formData[f]}
-                                            onChange={(event) => {console.log(formData); 
-                                                const newFormData = {...formData};
-                                                newFormData[f] = event.target.value;
-                                                setFormData(newFormData)}}
+                                            onChange={(event) => {
+                                                setFormData((prev) => {
+                                                    const newFormData = {...prev};
+                                                    console.log(f);
+                                                    console.log(newFormData);
+                                                    newFormData[f] = event.target.value;
+                                                    return newFormData;
+                                                }
+                                                )}}
                                             min={-1000} max={-100} step={5}
                                         />
                                         <ul class="flex justify-between w-full">
                                             <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">-1000</span></li>
                                             <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">-775</span></li>
-                                            <li class="flex justify-center relative font-bold text-xl">Current: {formData[f]}</li>
+                                            <li class="animate-pulse flex justify-center relative font-bold text-xl">Current: {formData[f]}</li>
                                             <li class="flex justify-center relative font-bold text-xl mr-2"><span class="absolute">-325</span></li>
                                             <li class="flex justify-center relative font-bold text-xl mr-2"><span class="absolute">-100</span></li>
                                         </ul>
@@ -251,10 +261,10 @@ const Query = (props) => {
                                 </div>
                             ))}
                                 <div className="flex flex-row space-x-4 mt-6">
-                                    <button onClick={ () => { setCurrentState("Strategy"); findFields() } }
+                                    <button onClick={ () => { setCurrentState("Strategy"); } }
                                     className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
                                         text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Strategy</button>
-                                    {true ? <button onClick={ () => { setCurrentState("Wage"); findFields() } }
+                                    {true ? <button onClick={ () => { setCurrentState("Wage"); } }
                                     className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
                                         text-white hover:bg-white hover:text-green-400`}>Next Step: Wage <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                                 </div>
@@ -301,10 +311,10 @@ const Query = (props) => {
                             </div>
                             <br></br>
                                 <div className="flex flex-row space-x-4">
-                                    <button onClick={ () => { setCurrentState("Form"); findFields() } }
+                                    <button onClick={ () => { setCurrentState("Form") } }
                                     className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
                                         text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Form</button>
-                                    {Object.keys(chosenWageStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Date"); findFields() } }
+                                    {Object.keys(chosenWageStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Date") } }
                                     className={`border-green-400 bg-green-400 border-2 m-2 mb-6 p-2 rounded-lg 
                                         text-white hover:bg-white hover:text-green-400`}>Next Step: Date <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
                                 </div>

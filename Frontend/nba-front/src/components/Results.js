@@ -1,7 +1,9 @@
 import { useEffect, useState, Fragment } from "react";
 import Sidebar from "./Sidebar.js";
-import { Chart as ChartJS } from 'chart.js/auto'
+import { Chart as ChartJS } from 'chart.js/auto';
 import { Line } from 'react-chartjs-2'
+import { Link } from 'react-router-dom';
+import queryString from 'query-string';
 
 const Results = (props) => {
     const query = window.location.href.split('query/')[1];
@@ -12,17 +14,37 @@ const Results = (props) => {
     const [money, setMoney] = useState([]);
     const [num, setNum] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [animation, setAnimation] = useState(false);
     const [animationNumber, setAnimationNumber] = useState(0);
     const [finalWinnings, setFinalWinnings] = useState(0);
+    const [currentState, setCurrentState] = props.currentState;
 
     let inter;
 
+    const saveQuery = () => {
+        console.log("query")
+        const [_, ending] = window.location.href.split("?");
+        console.log(ending);
+        let params = queryString.parse(ending)
+        console.log(params);
+        const newObj = {};
+        newObj["Wage Strategy"] = params["betType"];
+        delete params["betType"];
+        newObj["End Date"] = params["endDate"];
+        delete params["endDate"];
+        newObj["Start Date"] = params["startDate"];
+        delete params["startDate"];
+        newObj["Wager"] = params["wager"];
+        delete params["wager"];
+        newObj["Team"] = params["team"];
+        delete params["team"];
+        newObj["Forms"] = params;
+        console.log(newObj);
+    }
+
     const stepTowards = (finalWinnings) => {
-        console.log(finalWinnings);
         setAnimationNumber((prev) => {
             if ((prev >= finalWinnings && finalWinnings >= 0) ||
-                (prev < finalWinnings && finalWinnings < 0)) {
+                (prev <= finalWinnings && finalWinnings < 0)) {
                 clearInterval(inter);
                 setTimeout(() => {
                     setLoading(false);
@@ -60,7 +82,6 @@ const Results = (props) => {
         fetch("http://localhost:3000/" + query)
             .then(results => results.json())
             .then(data => {
-                console.log(data);
                 const money = [];
                 const num = [];
                 let i = 1;
@@ -91,7 +112,7 @@ const Results = (props) => {
                 </Sidebar>
             </div>
             <div className="basis-3/4 h-full overflow-y-scroll">
-                <div className="h-1/4">
+                <div className="h-3/12 mb-8">
                     <p className="text-5xl text-center font-bold m-10">Results</p>
                     <div className="flex flex-row">
                         <div className="ml-4 w-1/2">
@@ -107,6 +128,14 @@ const Results = (props) => {
                         </div>
                         <div className="mr-4 w-1/2">
                             <button onClick={() => setHideLosses((prev) => {return !prev})} className={`border-black border-2 text-xl w-full rounded-r-lg ${hideLosses ? "bg-black text-green-400" : ""}`}>Hide Losses</button>
+                        </div>
+                    </div>
+                    <div className="flex flex-row mt-5">
+                        <div className="ml-4 w-1/2">
+                            <Link to="/newquery"><button onClick={() => setCurrentState("Team")} className={`border-black border-2 text-xl w-full rounded-l-lg hover:bg-black hover:text-green-400`}>New Query </button></Link>
+                        </div>
+                        <div className="mr-4 w-1/2">
+                            <button onClick={saveQuery} className={`border-black border-2 text-xl w-full rounded-r-lg hover:bg-black hover:text-green-400`}>Save Query</button>
                         </div>
                     </div>
                 </div>
