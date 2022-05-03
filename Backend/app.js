@@ -45,6 +45,9 @@ app.use('/playersonteam', indexRouter);
 app.use('/zigzag', indexRouter);
 app.use('/heavyfavorite', indexRouter);
 app.use('/winstreak', indexRouter);
+app.use('/losingstreak', indexRouter);
+app.use('/likedteam', indexRouter);
+app.use('/homerecovery', indexRouter);
 
 
 // catch 404 and forward to error handler
