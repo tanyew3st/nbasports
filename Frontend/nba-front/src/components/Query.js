@@ -117,7 +117,7 @@ const Query = (props) => {
                 <p className="text-2xl mt-4">{params[currentState].subtitle}</p>
             </div>
             <div className="basis-3/4 mt-4">
-                {currentState == "Team" ? 
+                {currentState === "Team" ? 
                     (<div>
                         <div className="flex flex-wrap">
                             {teams.map((team => (

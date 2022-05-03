@@ -63,7 +63,7 @@ const Results = (props) => {
                 const money = [];
                 const num = [];
                 let i = 1;
-                setFinalWinnings(data["winnings"]);
+                setFinalWinnings(data["finalwinnings"]);
                 setResults(data.results);
                 for (const result of data.results) {
                     money.push(result["totalwinnings"]);
@@ -72,7 +72,7 @@ const Results = (props) => {
                 }
                 setMoney(money);
                 setNum(num);
-                inter = setInterval(() => {stepTowards(data["winnings"]);}, 10);
+                inter = setInterval(() => {stepTowards(data["finalwinnings"]);}, 10);
             })
     }, [query])
 

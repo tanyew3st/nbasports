@@ -1,5 +1,7 @@
 import Sidebar from './Sidebar.js'
 import Query from './Query.js'
+import Home from './Home.js'
+import Login from './Login.js'
 import React, { Fragment, useState } from 'react'
 
 
@@ -9,13 +11,17 @@ const Container = (props) => {
     const [currentState, setCurrentState] = props.currentState;
 
     return <Fragment>
+        {currentState}
         <div className="flex flex-row h-screen overflow-y-scroll">
             <div className="basis-1/4 h-full">
                 <Sidebar currentState={[currentState, setCurrentState]}>
                 </Sidebar>
             </div>
             <div className="basis-3/4 h-screen overflow-y-scroll">
-                <Query currentState={[currentState, setCurrentState]}></Query>
+                {currentState === "newquery" || currentState === "Team" || currentState === "Strategy" || currentState === "Wage" || currentState === "Form" || currentState === "Date" ? 
+                    <Query currentState={[currentState, setCurrentState]}></Query>
+                : (currentState === "Home" ? <Home currentState={[currentState, setCurrentState]}></Home> : <Fragment>{
+                    currentState === "Login" ? <Login currentState={[currentState, setCurrentState]}></Login> : <div></div>}</Fragment>)} 
             </div>
         </div>
     </Fragment>;
