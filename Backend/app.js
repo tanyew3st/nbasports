@@ -42,6 +42,7 @@ app.use('/ifbetaway', indexRouter);
 app.use('/teamnames', indexRouter);
 app.use('/onload', indexRouter);
 app.use('/playersonteam', indexRouter);
+app.use('/zigzag', indexRouter);
 
 
 // catch 404 and forward to error handler
