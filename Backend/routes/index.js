@@ -962,7 +962,7 @@ router.get('/zigzag', function(req, res) {
 router.get('/heavyfavorite', function(req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
-  const odds = req.query.odds ? req.query.odds : -300
+  const odds = req.query.Odds ? req.query.Odds : -300
   const team = req.query.team ? req.query.team: 'Warriors'
   const startDate = req.query.start? req.query.start: "2012-10-30"
    const finalDate = req.query.end? req.query.end : "2019-04-10"
