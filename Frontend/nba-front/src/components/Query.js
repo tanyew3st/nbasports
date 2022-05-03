@@ -82,7 +82,7 @@ const Query = (props) => {
 
         const f = {}
         for (const form of Object.keys(chosenStrategy.form)) {
-            chosenStrategy.form[form] === "integer" ? f[form] = 0 : f[form] = ""
+            chosenStrategy.form[form] === "integer" ? f[form] = 0 : (chosenStrategy.form[form] == "odds" ? f[form]=-100 : f[form] = "")
             if (chosenStrategy.form[form] === "player") { f[form] = players[0]["PlayerName"]}
         }
         setFormData(f);
@@ -238,9 +238,11 @@ const Query = (props) => {
                                             min={-1000} max={-100} step={5}
                                         />
                                         <ul class="flex justify-between w-full">
+                                            <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">-1000</span></li>
                                             <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">-775</span></li>
                                             <li class="flex justify-center relative font-bold text-xl">Current: {formData[f]}</li>
                                             <li class="flex justify-center relative font-bold text-xl mr-2"><span class="absolute">-325</span></li>
+                                            <li class="flex justify-center relative font-bold text-xl mr-2"><span class="absolute">-100</span></li>
                                         </ul>
                                         </div>
                                     </div>
@@ -299,7 +301,7 @@ const Query = (props) => {
                             </div>
                             <br></br>
                                 <div className="flex flex-row space-x-4">
-                                    <button onClick={ () => { setCurrentState("Date"); findFields() } }
+                                    <button onClick={ () => { setCurrentState("Form"); findFields() } }
                                     className={`border-green-400 bg-green-400 border-2 mt-2 mb-6 p-2 rounded-lg 
                                         text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Form</button>
                                     {Object.keys(chosenWageStrategy).length !== 0 ? <button onClick={ () => { setCurrentState("Date"); findFields() } }
@@ -311,9 +313,15 @@ const Query = (props) => {
                             <input value={startDate} onChange={(event) => {setStartDate(event.target.value)}} min="2012-10-30" max="2019-04-10" className="w-1/2 accent-green-400 p-2 selection:bg-green-400 border-black border-2 focus:border-green-400 rounded-lg color-scheme-green-400" type="date"></input>
                             <input value={endDate} onChange={(event) => {setEndDate(event.target.value)}} min={startDate} max="2019-04-10" className="w-1/2 accent-green-400 p-2 selection:bg-green-400 border-black border-2 focus:border-green-400 rounded-lg color-scheme-green-400" type="date"></input>
                         </div>
-                        <button onClick={ () => { runQuery() } }
+                        <div className="flex flex-row space-x-4">
+                            <button onClick={ () => { setCurrentState("Form") } }
                             className={`border-green-400 bg-green-400 border-2 mt-6 mb-6 p-2 rounded-lg 
-                                text-white hover:bg-white hover:text-green-400`}>Run Query <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button>
+                                text-white hover:bg-white hover:text-green-400`}><FontAwesomeIcon icon={ faArrowLeft }></FontAwesomeIcon> Previous Step: Form</button>
+                            {Object.keys(chosenWageStrategy).length !== 0 ? 
+                            <button onClick={ () => { runQuery() } }
+                            className={`border-green-400 bg-green-400 border-2 mt-6 mb-6 p-2 rounded-lg 
+                                text-white hover:bg-white hover:text-green-400`}>Run Query <FontAwesomeIcon icon={ faArrowRight } ></FontAwesomeIcon></button> : ""}
+                        </div>
                         </div>)}
                         
                         </div>
