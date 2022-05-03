@@ -14,7 +14,7 @@ const Signup = (props) => {
 
     const submitInfo = () => {
         const reqBody = {
-            "username": username,
+            "username": "username",
             "password": password,
             "firstname": fname,
             "lastname": lname,
@@ -27,7 +27,7 @@ const Signup = (props) => {
             body: JSON.stringify(reqBody)
         };
 
-        fetch('http://localhost:8080/signup', requestOptions)
+        fetch('http://localhost:3000/adduser', requestOptions)
             .then(response => response.json())
             .then(data => 
                 console.log(data)
@@ -59,7 +59,7 @@ const Signup = (props) => {
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                             <FontAwesomeIcon icon={ faEnvelope }></FontAwesomeIcon>
                         </span>
-                        <input id="email" value={email} onChange={(event) => setFname(event.target.value)} className="placeholder:italic placeholder:text-black block bg-white w-full border border-black rounded-md py-2 pl-9 pr-3 shadow-sm focus:outline-none focus:border-green-400 focus:ring-green-400 focus:ring-1 sm:text-sm" placeholder="johnny@example.com" type="text" name="email"/>
+                        <input id="email" value={email} onChange={(event) => setEmail(event.target.value)} className="placeholder:italic placeholder:text-black block bg-white w-full border border-black rounded-md py-2 pl-9 pr-3 shadow-sm focus:outline-none focus:border-green-400 focus:ring-green-400 focus:ring-1 sm:text-sm" placeholder="johnny@example.com" type="text" name="email"/>
                     </label>                                        
                 </div>
                 <div className="mb-2 mt-5">
