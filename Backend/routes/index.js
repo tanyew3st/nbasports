@@ -268,7 +268,7 @@ router.get('/favored', function(req, res) {
   console.log(wager)
  
      connection.query(`WITH OddsWin AS (
-      SELECT O.TeamId as oti, O.GameId AS GameID, O.ML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O, Teams T
       WHERE T.TeamId = O.TeamId
       ), GameOdds AS (
@@ -336,7 +336,7 @@ router.get('/unfavored', function(req, res) {
   console.log(wager)
  
      connection.query(`WITH OddsWin AS (
-      SELECT O.TeamId as oti, O.GameId AS GameID, O.ML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
       FROM Odds O, Teams T
       WHERE T.TeamId = O.TeamId
   ), GameOdds AS (
@@ -616,12 +616,12 @@ router.get('/ifbetplayer', function(req, res) {
    console.log(wager)
  
      connection.query(`WITH HomeTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.ML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.BetOnlineML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
       FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
       WHERE O.Location = 'Home' AND GD.PlayerName = '${player}'
       ORDER BY O.Date ASC
      ), AwayTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.ML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.BetOnlineML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
       FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
       WHERE O.Location = 'Away' AND GD.PlayerName = '${player}'
       ORDER BY O.Date ASC
@@ -680,11 +680,11 @@ router.get('/ifbethome', function(req, res) {
    console.log(wager)
    
      connection.query(`WITH RenameHome AS (
-      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.ML AS HomeOdds, O.Result AS Win
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'home'
   ), RenameAway AS (
-      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.ML AS AwayOdds, O.Result AS Win
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'away'
   ), JoinHomeAway AS (
@@ -727,11 +727,11 @@ router.get('/ifbetaway', function(req, res) {
    console.log(wager)
  
      connection.query(`WITH RenameHome AS (
-      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.ML AS HomeOdds, O.Result AS Win
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'home'
   ), RenameAway AS (
-      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.ML AS AwayOdds, O.Result AS Win
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'away'
   ), JoinHomeAway AS (
@@ -884,6 +884,10 @@ router.get('/onload', function(req, res) {
     {
       "name": "Increment",
       "description": "Betting an incrementing amount of money on each wager",   
+    },
+    {
+      "name": "Martingale",
+      "description": "Betting according to the classic Martingale Strategy where one doubles their bet at each round if a loss occurs",   
     }
   ]
   }
@@ -932,11 +936,11 @@ router.get('/zigzag', function(req, res) {
     console.log(wager)
     
       connection.query(`WITH RenameHome AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.ML AS HomeOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
     ), RenameAway AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.ML AS AwayOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
     ), JoinHomeAway AS (
@@ -990,7 +994,7 @@ router.get('/heavyfavorite', function(req, res) {
     console.log(wager)
     
       connection.query(`WITH OddsWithTeamNames AS (
-        SELECT O.TeamId as oti, O.GameId AS GameID, O.ML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
+        SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O, Teams T
         WHERE T.TeamId = O.TeamId
     ), GameOdds AS (
@@ -1385,6 +1389,76 @@ function addingWage(results, betType, wager)
             count++;
          }
          }
+         else if (betType = "Martingale")
+         {
+          for (let i = 0; i  < results.length; i++)
+          {
+           
+            if (i != 0)
+            {
+            if (results[i-1].Win == "L")
+            {
+               results[i].wager = (2 * results[i-1].wager)
+            }
+            else
+            {
+              results[i].wager = wager;
+            }
+            }
+            else
+            {
+              results[i].wager = wager;
+            }
+            
+           if (results[i].Win == "W")
+           {
+              if (results[i].Bet == results[i].Home)
+              {
+               if (results[i].HomeOdds < 0)
+               {
+                  
+                    winnings = ((-100 / (results[i].HomeOdds)) * (results[i].wager)) + winnings
+                    results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (results[i].wager));
+                    results[i].totalwinnings = winnings;
+                   
+               }
+               else
+               {
+                 winnings = ((results[i].HomeOdds / (100)) * (results[i].wager)) + winnings
+                 results[i].amountwon = ((results[i].HomeOdds / (100)) * (results[i].wager)) ;
+                 results[i].totalwinnings = winnings;
+
+               }
+              }
+              else
+              {
+               if (results[i].AwayOdds < 0)
+               {
+                  
+                    winnings = ((-100 / (results[i].AwayOdds)) * (results[i].wager)) + winnings
+                    results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (results[i].wager));
+                    results[i].totalwinnings = winnings;
+                   
+               }
+               else
+               {
+                 winnings = ((results[i].AwayOdds / (100)) * (results[i].wager)) + winnings
+                 results[i].amountwon = ((results[i].AwayOdds / (100)) * (results[i].wager))
+                 results[i].totalwinnings = winnings;
+
+               }
+              }
+           }
+           else
+           {
+                winnings = winnings - (results[i].wager)
+                results[i].amountwon = -(results[i].wager);
+               results[i].totalwinnings = winnings;
+           }
+           count++;
+
+         }
+        }
 
          return results;
 }
