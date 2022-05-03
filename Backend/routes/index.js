@@ -1465,23 +1465,23 @@ function addingWage(results, betType, wager)
 }
 
 /* Route #24: Add a user to the DynamoDB Table */
-router.get('/signup', function(req, res) {
-    var userName = req.query.username;
+router.get('/adduser', function(req, res) {
+    var userName = req.body.username;
     db.lookup(userName, function(err, data) {
        if (data)
        {
           res.json({error: "This username is taken."})
        }
        else {
-          var passWord = req.query.password;
-          var fullname = ""+req.query.firstname+" "+req.query.lastname;
-          var emailAddress = req.query.emailaddress;
+          var passWord = req.body.password;
+          var fullname = ""+req.body.firstname+" "+req.body.lastname;
+          var emailAddress = req.body.emailaddress;
           if (userName == undefined || passWord == undefined|| fullname == undefined || emailAddress == undefined )
 			    {
 				      res.json({error: "An input was empty or inefficient. Try again!"})
 			    }
           else {
-            var hashedPassword = CryptoJS.SHA256(passWord).toString();
+            var hashedPassword = CryptoJS.SHA256(passWord).toString()
             db.addUser(userName, hashedPassword, fullname, emailAddress, function(err, data) {
             {
                 if (err)
@@ -1499,8 +1499,7 @@ router.get('/signup', function(req, res) {
     })
 
 });
-
-
+ 
 module.exports = router;
  
 

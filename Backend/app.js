@@ -46,8 +46,7 @@ app.use('/winstreak', indexRouter);
 app.use('/losingstreak', indexRouter);
 app.use('/likedteam', indexRouter);
 app.use('/homerecovery', indexRouter);
-app.use('/signup', indexRouter);
-app.use('/login', indexRouter);
+app.use('/adduser', indexRouter);
 
 
 // catch 404 and forward to error handler
