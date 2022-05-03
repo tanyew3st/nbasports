@@ -1465,7 +1465,7 @@ function addingWage(results, betType, wager)
 }
 
 /* Route #24: Add a user to the DynamoDB Table */
-router.get('/adduser', function(req, res) {
+router.post('/adduser', function(req, res) {
     var userName = req.body.username;
     db.lookup(userName, function(err, data) {
        if (data)

@@ -14,12 +14,14 @@ const Signup = (props) => {
 
     const submitInfo = () => {
         const reqBody = {
-            "username": "username",
+            "username": username,
             "password": password,
             "firstname": fname,
             "lastname": lname,
             "email": email
         }
+
+        console.log(JSON.stringify(reqBody));
 
         const requestOptions = {
             method: 'POST',
@@ -33,7 +35,7 @@ const Signup = (props) => {
                 console.log(data)
             )
             .catch(error => {
-                alert(error);
+                console.log(error);
             })
         
     }
