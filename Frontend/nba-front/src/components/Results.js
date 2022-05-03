@@ -21,11 +21,10 @@ const Results = (props) => {
     let inter;
 
     const saveQuery = () => {
-        console.log("query")
+        const beg = window.location.href.split("query/")[1];
+        const finalStrategy = beg.split("?")[0];
         const [_, ending] = window.location.href.split("?");
-        console.log(ending);
         let params = queryString.parse(ending)
-        console.log(params);
         const newObj = {};
         newObj["Wage Strategy"] = params["betType"];
         delete params["betType"];
@@ -38,7 +37,8 @@ const Results = (props) => {
         newObj["Team"] = params["team"];
         delete params["team"];
         newObj["Forms"] = params;
-        console.log(newObj);
+        newObj["Strategy"] = ending;
+        newObj["Final Winnings"] = finalWinnings;
     }
 
     const stepTowards = (finalWinnings) => {
@@ -71,7 +71,8 @@ const Results = (props) => {
                 var index = context.dataIndex;
                 // var value = context.dataset.data[index];
                 return results[index]["Win"] === "W" ? 'rgb(74 222 128)' : 'rgb(0,0,0)'
-            }
+            },
+            pointClass: "animate-pulse",
           },
         ]
     }

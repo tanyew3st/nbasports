@@ -57,8 +57,8 @@ const Query = (props) => {
         location += "?team=";
         location += chosenTeam;
         location += "&wager=" + wager;
-        location += "&startDate=" + startDate;
-        location += "&endDate=" + endDate;
+        location += "&start=" + startDate;
+        location += "&end=" + endDate;
         location += "&betType=" + chosenWageStrategy["name"];
         console.log(formData);
         for (const form of Object.keys(formData)) {
@@ -247,7 +247,7 @@ const Query = (props) => {
                                                 )}}
                                             min={-1000} max={-100} step={5}
                                         />
-                                        <ul class="flex justify-between w-full">
+                                        <ul class="flex justify-between w-full pr-5 pl-5">
                                             <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">-1000</span></li>
                                             <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">-775</span></li>
                                             <li class="animate-pulse flex justify-center relative font-bold text-xl">Current: {formData[f]}</li>
