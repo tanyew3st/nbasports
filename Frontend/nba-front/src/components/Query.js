@@ -214,7 +214,38 @@ const Query = (props) => {
                                     </ul>
                                     </div>
                                 </div>
-                            </div> : <div></div>}</div>}
+                            </div> : <div>
+                                <div>
+                                {/* if the chosen strategy is an integer field */}
+                                    <div className="mt-5">
+                                        <p className="font-bold text-3xl mb-4">{f}</p>
+                                        <div class="relative pt-1">
+                                        <input type="range" class="form-range
+                                            text-green-400
+                                            w-full
+                                            accent-green-400
+                                            border-none
+                                            range-primary-green-400
+                                            h-6
+                                            p-0
+                                            focus:outline-none focus:ring-0 focus:shadow-none
+                                            "id="customRange1"
+                                            value={formData[f]}
+                                            onChange={(event) => {console.log(formData); 
+                                                const newFormData = {...formData};
+                                                newFormData[f] = event.target.value;
+                                                setFormData(newFormData)}}
+                                            min={-1000} max={-100} step={5}
+                                        />
+                                        <ul class="flex justify-between w-full">
+                                            <li class="flex justify-center relative font-bold text-xl ml-2"><span class="absolute">-775</span></li>
+                                            <li class="flex justify-center relative font-bold text-xl">Current: {formData[f]}</li>
+                                            <li class="flex justify-center relative font-bold text-xl mr-2"><span class="absolute">-325</span></li>
+                                        </ul>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>}</div>}
                                 </div>
                             ))}
                                 <div className="flex flex-row space-x-4 mt-6">

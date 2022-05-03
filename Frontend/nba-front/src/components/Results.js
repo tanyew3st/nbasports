@@ -19,6 +19,7 @@ const Results = (props) => {
     let inter;
 
     const stepTowards = (finalWinnings) => {
+        console.log(finalWinnings);
         setAnimationNumber((prev) => {
             if ((prev >= finalWinnings && finalWinnings >= 0) ||
                 (prev < finalWinnings && finalWinnings < 0)) {
@@ -26,7 +27,7 @@ const Results = (props) => {
                 setTimeout(() => {
                     setLoading(false);
                 }, 2000)
-                return prev
+                return finalWinnings;
             } else {
                 return (prev + (finalWinnings / 500));
         }
@@ -47,13 +48,13 @@ const Results = (props) => {
             pointBackgroundColor: function(context) {
                 var index = context.dataIndex;
                 // var value = context.dataset.data[index];
-                return results[index]["FavoredWins"] ? 'rgb(74 222 128)' : 'rgb(0,0,0)'
+                return results[index]["Win"] === "W" ? 'rgb(74 222 128)' : 'rgb(0,0,0)'
             }
           },
         ]
     }
 
-    const keys = ["Game ID", "Date", "Home", "Away", "Bet", "Home Odds", "Away Odds", "Win", "Wager", "Winnings", "Total Winnings"]
+    const keys = ["Index", "Game ID", "Date", "Home", "Home Odds", "Away", "Away Odds", "Win", "Team Bet On", "Wager", "Winnings", "Total Winnings"]
     
     useEffect(() => {
         fetch("http://localhost:3000/" + query)
@@ -63,7 +64,8 @@ const Results = (props) => {
                 const money = [];
                 const num = [];
                 let i = 1;
-                setFinalWinnings(data["finalwinnings"]);
+                const finalWinnings = data.results[data.results.length - 1]["totalwinnings"];
+                setFinalWinnings(finalWinnings);
                 setResults(data.results);
                 for (const result of data.results) {
                     money.push(result["totalwinnings"]);
@@ -72,7 +74,7 @@ const Results = (props) => {
                 }
                 setMoney(money);
                 setNum(num);
-                inter = setInterval(() => {stepTowards(data["finalwinnings"]);}, 10);
+                inter = setInterval(() => {stepTowards(finalWinnings);}, 10);
             })
     }, [query])
 
@@ -109,18 +111,26 @@ const Results = (props) => {
                     </div>
                 </div>
                 <div className="basis-1/2 m-4">
-                    {view === "table" ? <table className="overflow-x-scroll table-fixed">
+                    {view === "table" ? <table className="overflow-x-scroll table-fixed width-screen">
                         <thead>
                             <tr>{keys.map(key => <th className="border-black border-2 p-2">{key}</th>)}</tr>
                         </thead>
                         <tbody>
                             {results.map((result, i) => 
-                            <Fragment>{(result["FavoredWins"] === 1 && !hideWins || result["FavoredWins"] == 0 && !hideLosses) ? (
-                            <tr className={`overflow-y-scroll border-black border-2 ${result["FavoredWins"] ? "bg-green-100" : "bg-white"}`}>
-                                {Object.keys(result).map((key, i) => 
-                                <td className="border-black border-2 p-2 text-center">
-                                    {i === 9 || i === 10 ? <div>{result[key].toFixed(3)}</div> : <div>{i === 7 ? <div>{result[key] === 1 ? "Win" : "Lose"}</div> : <div>{result[key]}</div>}</div>}
-                                </td>)}
+                            <Fragment>{(result["Win"] === "W" && !hideWins || result["Win"] == "L" && !hideLosses) ? (
+                            <tr className={`overflow-y-scroll border-black border-2 ${result["Win"] === "W" ? "bg-green-100" : "bg-white"}`}>
+                                <td className="border-black border-2 p-2 text-center">{i + 1}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["GameID"]}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["Date"]}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["Home"]}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["HomeOdds"]}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["Away"]}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["AwayOdds"]}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["Win"]}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["Bet"]}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["wager"]}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["amountwon"].toFixed(3)}</td>
+                                <td className="border-black border-2 p-2 text-center">{result["totalwinnings"].toFixed(3)}</td>
                             </tr>) : <tr></tr>}</Fragment>)}
                         </tbody>
                     </table> : 

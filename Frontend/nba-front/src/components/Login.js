@@ -1,27 +1,30 @@
 import { faUser, faDoorOpen, faLock } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
-const Login = () => {
+const Login = (props) => {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [incorrect, setIncorrect] = useState(false);
+    const [currentState, setCurrentState] = props.currentState;
 
     const submitInfo = () => {
-
+        setIncorrect(true);
     }
     
     return <div className="h-full flex flex-col ml-10 mr-10">
             <div>
                 <FontAwesomeIcon 
-                    className="border-black p-4 mt-8 border-2 rounded-full w-child hover:text-green-400" 
+                    className={`border-black p-4 mt-8 border-2 rounded-full w-child ${incorrect ? "text-red-700 animate-pulse" : "hover:text-green-400"} `} 
                     icon={ faUser } size="3x" />
             </div>
             <div className="basis-1/4">
                 <p className="text-5xl font-bold mt-16">
                     Log In
                 </p>
-                <p className="text-2xl mt-4">Enter your username and password to see your saved queries. No account? <span className="underline-offset-4 underline text-green-400 hover:text-gray-800">Sign up!</span></p>
+                <p onClick={() => setCurrentState("Signup")} className="text-2xl mt-4">Enter your username and password to see your saved queries. No account? <span className="underline-offset-4 underline text-green-400 hover:text-gray-800"><Link to="/signup"> Sign up!</Link></span></p>
             </div>
             <div className="basis-3/4 mt-4">
                 <div className="mb-2 mt-5">
