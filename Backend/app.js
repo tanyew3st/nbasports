@@ -17,7 +17,6 @@ app.use(cors({ credentials: true, origin: ['http://localhost:8000', 'http://loca
 
 
 
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -25,7 +24,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/winbet', indexRouter);
 app.use('/upsetteam', indexRouter);
 app.use('/standings', indexRouter);
@@ -48,6 +46,8 @@ app.use('/winstreak', indexRouter);
 app.use('/losingstreak', indexRouter);
 app.use('/likedteam', indexRouter);
 app.use('/homerecovery', indexRouter);
+app.use('/signup', indexRouter);
+app.use('/login', indexRouter);
 
 
 // catch 404 and forward to error handler

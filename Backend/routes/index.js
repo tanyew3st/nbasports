@@ -1,7 +1,8 @@
-
+var db = require('../routes/users.js');
 var express = require('express');
 var router = express.Router();
 const mysql = require('mysql');
+var CryptoJS = require("crypto-js");
 
 const cors = require('cors');
 
@@ -1462,7 +1463,44 @@ function addingWage(results, betType, wager)
 
          return results;
 }
- 
+
+/* Route #24: Add a user to the DynamoDB Table */
+router.get('/signup', function(req, res) {
+    var userName = req.query.username;
+    db.lookup(userName, function(err, data) {
+       if (data)
+       {
+          res.json({error: "This username is taken."})
+       }
+       else {
+          var passWord = req.query.password;
+          var fullname = ""+req.query.firstname+" "+req.query.lastname;
+          var emailAddress = req.query.emailaddress;
+          if (userName == undefined || passWord == undefined|| fullname == undefined || emailAddress == undefined )
+			    {
+				      res.json({error: "An input was empty or inefficient. Try again!"})
+			    }
+          else {
+            var hashedPassword = CryptoJS.SHA256(passWord).toString();
+            db.addUser(userName, hashedPassword, fullname, emailAddress, function(err, data) {
+            {
+                if (err)
+                {
+                  console.log(err);
+                }
+                else{
+                  res.json({username: "username"})
+                }
+                
+            }
+          });
+          }
+       }
+    })
+
+});
+
+
 module.exports = router;
  
 
