@@ -828,7 +828,14 @@ router.get('/onload', function(req, res) {
             "route": "ifbetaway",
             "form" :
             {
-            },}], 
+            },}, 
+            {
+              "name": "Zigzag Bet",
+              "description": " Gets the data for various betting strategies, when the user bets on the home team winning after a loss over an interval",
+              "route": "zigzag",
+              "form" :
+              {
+              },}], 
     "Wage Strategies" :
     [{
       "name": "Constant",
@@ -874,7 +881,65 @@ router.get('/playersonteam', function(req, res) {
 
 
 });
- 
+
+/* Route #18: GETS the data for various betting strategies, when the user bets on a team given that they lost the game before and are at home  */
+/* Request Path: “/zigzag?betType=&wager=&team=*/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the */
+/* Query Parameters: team and dates, which denotes the team that we are betting on when they are at home after a loss */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is home who scored for various wagers and betting strategies, along with the relevant game data */
+router.get('/zigzag', function(req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team: 'Warriors'
+  const startDate = req.query.start? req.query.start: "2012-10-30"
+   const finalDate = req.query.end? req.query.end : "2019-04-10"
+    console.log(wager)
+    
+      connection.query(`WITH RenameHome AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'home'
+    ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'away'
+    ), JoinHomeAway AS (
+        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, H.Win AS Win
+        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+    ), NumberedRows AS (
+        SELECT ROW_NUMBER() OVER(ORDER BY Date) AS RowNumber, O.GameID, O.Date AS Date, O.Home, O.Away, O.HomeOdds, O.AwayOdds, O.Win
+        FROM JoinHomeAway O
+        WHERE O.Home =  '${team}'
+        ORDER BY O.Date ASC
+    ), CartesianProduct AS (
+        SELECT A.GameID, A.Date, A.Home, A.Away, A.Home AS Bet, A.HomeOdds, A.AwayOdds, A.Win
+        FROM NumberedRows A,  NumberedRows B
+        WHERE A.RowNumber = (B.RowNumber - 1) AND B.Win = "L"
+    )
+    SELECT *
+    FROM CartesianProduct
+    WHERE Date >= '${startDate}' AND Date <=  '${finalDate}'
+    ORDER BY Date;
+    
+   
+     
+    
+      `, function(error, results, fields) {
+        if (error) {
+          console.log(error)
+          res.json({error: error})
+        }
+        else if (results) {
+          results = addingWage(results, betType, wager)
+          res.json({results: results})
+        }
+          
+      });
+  
+  
+ });
+
+
 function addingWage(results, betType, wager)
 {
   count = 0;
