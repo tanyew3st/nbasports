@@ -39,6 +39,7 @@ const Results = (props) => {
         newObj["Forms"] = params;
         newObj["Strategy"] = ending;
         newObj["Final Winnings"] = finalWinnings;
+        console.log(newObj);
     }
 
     const stepTowards = (finalWinnings) => {

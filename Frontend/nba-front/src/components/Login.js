@@ -11,7 +11,25 @@ const Login = (props) => {
     const [currentState, setCurrentState] = props.currentState;
 
     const submitInfo = () => {
-        setIncorrect(true);
+        const reqBody = {
+            "username": username,
+            "password": password,
+        }
+
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reqBody)
+        };
+
+        fetch('http://localhost:8080/login', requestOptions)
+            .then(response => response.json())
+            .then(data => 
+                console.log(data)
+            )
+            .catch(error => {
+                alert(error);
+            })
     }
     
     return <div className="h-full flex flex-col ml-10 mr-10">
