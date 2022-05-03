@@ -835,14 +835,29 @@ router.get('/onload', function(req, res) {
               "route": "zigzag",
               "form" :
               {
-              },}], 
+              },}, 
+              {
+                "name": "Heavy Favorite Bet",
+                "description": " Gets the data for various betting strategies, when the user bets on the heavy favored team over an interval",
+                "route": "heavyfavorite",
+                "form" :
+                {
+                  "Odds"    : "odds",
+              },}, 
+              {
+                "name": "Win Streak Bet",
+                "description": " Gets the data for various betting strategies, when the user bets on the team on a win streak over an interval",
+                "route": "winstreak",
+                "form" :
+                {
+                },},], 
     "Wage Strategies" :
     [{
       "name": "Constant",
       "description": "Betting the same amount of money, the wager, on each bet",   
     }, 
     {
-      "name": "Doubling",
+      "name": "Double Increment",
       "description": "Betting double the amount of money of the previous wager, on each bet",   
     },
     {
@@ -923,6 +938,134 @@ router.get('/zigzag', function(req, res) {
     
    
      
+    
+      `, function(error, results, fields) {
+        if (error) {
+          console.log(error)
+          res.json({error: error})
+        }
+        else if (results) {
+          results = addingWage(results, betType, wager)
+          res.json({results: results})
+        }
+          
+      });
+  
+  
+ });
+
+ /* Route #19: GETS the data for various betting strategies, when the user bets on a team given the team is a heavy favorite, specified by the odds  */
+/* Request Path: “/heavyfavorite?betType=&wager=&team=*/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the */
+/* Query Parameters: team, odds, and dates, which denotes the team that we are betting on when they are at home after a loss */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is home who scored for various wagers and betting strategies, along with the relevant game data */
+router.get('/heavyfavorite', function(req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const odds = req.query.odds ? req.query.odds : -300
+  const team = req.query.team ? req.query.team: 'Warriors'
+  const startDate = req.query.start? req.query.start: "2012-10-30"
+   const finalDate = req.query.end? req.query.end : "2019-04-10"
+    console.log(wager)
+    
+      connection.query(`WITH OddsWithTeamNames AS (
+        SELECT O.TeamId as oti, O.GameId AS GameID, O.BestLineML AS BestLineML, O.Result, T.TeamId, T.Nickname AS Nickname
+        FROM Odds O, Teams T
+        WHERE T.TeamId = O.TeamId
+    ), GameOdds AS (
+        SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BestLineML AS HomeOdds, AOdds.BestLineML AS AwayOdds, HOdds.Result AS HomeResult
+        FROM OddsWithTeamNames HOdds, Games G, OddsWithTeamNames AOdds
+        WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
+    ), GameOddsWithFavored AS (
+       (SELECT *, HomeTeam AS HeavyFavoredTeam
+       FROM GameOdds
+       WHERE (HomeOdds <='${odds}'))
+       UNION
+       (SELECT *, AwayTeam AS HeavyFavoredTeam
+       FROM GameOdds
+       WHERE (AwayOdds <= '${odds}'))
+    ), FavoredWins AS (
+       SELECT GameId, GameDate, HomeTeam, AwayTeam, HeavyFavoredTeam, HomeOdds, AwayOdds, 'W' AS BetResult
+       FROM GameOddsWithFavored
+       WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
+    ), FavoredLosses AS (
+       SELECT GameId, GameDate, HomeTeam, AwayTeam, HeavyFavoredTeam, HomeOdds, AwayOdds, 'L' AS BetResult
+       FROM GameOddsWithFavored
+       WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
+    ), UnionBoth AS (
+       SELECT *
+       FROM FavoredLosses
+       UNION
+       SELECT *
+       FROM FavoredWins
+    )
+    SELECT GameID, GameDate AS Date, HomeTeam AS Home, AwayTeam as Away, HeavyFavoredTeam AS Bet, HomeOdds, AwayOdds, BetResult AS Win
+    FROM UnionBoth
+    WHERE GameDate >= '${startDate}' AND GameDate <= '${finalDate}'  AND HeavyFavoredTeam = '${team}'
+    ORDER BY GameDate;
+    
+    
+   
+     
+    
+      `, function(error, results, fields) {
+        if (error) {
+          console.log(error)
+          res.json({error: error})
+        }
+        else if (results) {
+          results = addingWage(results, betType, wager)
+          res.json({results: results})
+        }
+          
+      });
+  
+  
+ });
+
+ /* Route #20: GETS the data for various betting strategies, when the user bets on a team given the team is on a large winstreak, specified by the odds  */
+/* Request Path: “/winstreak?betType=&wager=&team=*/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
+/* Query Parameters: team and dates, which denotes the team that we are betting on */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is extremely favored and who scored for various wagers and betting strategies, along with the relevant game data */
+router.get('/winstreak', function(req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team: 'Warriors'
+  const startDate = req.query.start? req.query.start: "2012-10-30"
+   const finalDate = req.query.end? req.query.end : "2019-04-10"
+    console.log(wager)
+    
+      connection.query(`
+      WITH RenameHome AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'home'
+    ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'away'
+    ), JoinHomeAway AS (
+        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = 'Celtics', H.Win, A.Win) AS Win
+        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+    ), CreateCount AS (
+       SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
+              IF(o.Win = 'W', 1, 0) AS StreakCounter
+       FROM JoinHomeAway o
+       WHERE o.Home ='${team}' OR o.Away = '${team}'
+    ), AggregateStreakWins AS (
+       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.Win, SUM(StreakCounter) OVER (
+           ORDER BY c.Date
+           ROWS 2 PRECEDING
+           ) AS AggregateStreak
+       FROM CreateCount c
+    ), ExclusiveOfCurrRow AS (
+       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.Win, IF(c.Win = 'W', c.AggregateStreak - 1, c.AggregateStreak) AS PriorWinStreak
+       FROM AggregateStreakWins c
+    )
+    SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.Win
+    FROM ExclusiveOfCurrRow c
+    WHERE c.PriorWinStreak >= 2 AND Date >= '${startDate}' AND Date <= '${finalDate}';
     
       `, function(error, results, fields) {
         if (error) {
