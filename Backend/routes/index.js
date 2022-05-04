@@ -1516,7 +1516,7 @@ router.post('/login', function(req, res) {
 			}
 			else
 			{
-				res.json({error: "An entered the password incorrectly. Try again!"})
+				res.json({error: "You entered the password incorrectly. Try again!"})
 			}
 		}
 		else
