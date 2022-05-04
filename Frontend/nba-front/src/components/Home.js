@@ -13,10 +13,10 @@ const Home = (props) => {
                 <p className="text-center text-white text-5xl">NBA Sports Betting Simulator</p>
             </div>
             <div className="flex space-x-5 w-full flex-row mr-10">
-                <button onClick={() => {setCurrentState("Team")}} className="animate-pulse w-full text-center mt-10 hover:bg-transparent rounded-lg hover:text-green-400 text-black bg-green-400 border-4 border-green-400">
+                <button onClick={() => {setCurrentState("Team")}} className="animate-pulse w-full text-center mt-10 hover:bg-transparent rounded-lg hover:text-green-400 text-black bg-green-400 border-2 border-green-400">
                 <Link to="/newquery"><p className="text-2xl p-2 pr-4 pl-4"><FontAwesomeIcon icon={ faPlus }></FontAwesomeIcon> New Query</p>
                 </Link></button>
-                <button onClick={() => {setCurrentState("Login")}} className="text-center w-full mt-10 hover:bg-transparent rounded-lg hover:text-green-400 text-black bg-green-400 border-4 border-green-400">
+                <button onClick={() => {setCurrentState("Login")}} className="text-center w-full mt-10 hover:bg-transparent rounded-lg hover:text-green-400 text-black bg-green-400 border-2 border-green-400">
                     <Link to="/login"><p className="text-2xl p-2 pr-4 pl-4"><FontAwesomeIcon icon={ faUser }></FontAwesomeIcon> Login</p>
                 </Link></button>
             </div>
