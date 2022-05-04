@@ -47,6 +47,7 @@ app.use('/losingstreak', indexRouter);
 app.use('/likedteam', indexRouter);
 app.use('/homerecovery', indexRouter);
 app.use('/adduser', indexRouter);
+app.use('/login', indexRouter);
 
 
 // catch 404 and forward to error handler

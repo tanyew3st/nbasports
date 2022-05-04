@@ -1499,6 +1499,36 @@ router.post('/adduser', function(req, res) {
     })
 
 });
+
+/* Route #25: Check that a user is in the DynamoDB Table */
+router.post('/login', function(req, res) {
+  var username = req.body.username;
+  var password = req.body.password;
+  db.lookup(username, function(err, data) {
+		if (err)
+		{
+			res.json({error: "An input was empty or inefficient. Try again!"})
+		} else if (data) {
+			var hashedPassword = CryptoJS.SHA256(password).toString();
+			if (data == hashedPassword)
+			{
+        res.json({username: "username"})
+			}
+			else
+			{
+				res.json({error: "An entered the password incorrectly. Try again!"})
+			}
+		}
+		else
+		{
+      res.json({error: "This username dooes not exist. Try again!"})
+		}
+
+	});
+});
+
+
+
  
 module.exports = router;
  

@@ -46,12 +46,10 @@ var myDB_lookup = function(username, callback) {
   db.query(params, function(err, data) {
     
     if (err || data.Items.length == 0) {
-      console.log(" NOT WORKING?")
 
       callback(err, null);
       
     } else {
-      console.log(" WORKING?")
       callback(err, data.Items[0].password.S);
     }	
   });
