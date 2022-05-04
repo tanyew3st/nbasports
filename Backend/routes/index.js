@@ -850,15 +850,17 @@ router.get('/onload', function(req, res) {
                 "description": " Gets the data for various betting strategies, when the user bets on a team on a win streak over an interval",
                 "route": "winstreak",
                 "form" :
-                {
-                },},
+    {
+        "streak"         : "integer"
+    }},
                 {
                   "name": "Losing Streak Bet",
-                  "description": " Gets the data for various betting strategies, when the user bets on a team on a losing streak over an interval",
+                  "description": " Gets the data for various betting strategies, when the user bets against a team on a losing streak over an interval",
                   "route": "losingstreak",
                   "form" :
-                  {
-                  },},
+    {
+        "streak"         : "integer"
+    }},
                   {
                     "name": "Liked Team Bet",
                     "description": " Gets the data for various betting strategies, when the user bets on a team they they like over an interval",
@@ -879,7 +881,7 @@ router.get('/onload', function(req, res) {
       "description": "Betting the same amount of money, the wager, on each bet",   
     }, 
     {
-      "name": "Double Increment",
+      "name": "Doubling",
       "description": "Betting double the amount of money of the previous wager, on each bet",   
     },
     {
@@ -1060,9 +1062,39 @@ router.get('/winstreak', function(req, res) {
   const team = req.query.team ? req.query.team: 'Warriors'
   const startDate = req.query.start? req.query.start: "2012-10-30"
    const finalDate = req.query.end? req.query.end : "2019-04-10"
+   const streak = req.query.streak ? req.query.streak : 2
     console.log(wager)
     
-      connection.query(`
+      connection.query(`WITH RenameHome AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'home'
+    ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'away'
+    ), JoinHomeAway AS (
+        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = 'Celtics', H.Win, A.Win) AS Win
+        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+    ), CreateCount AS (
+       SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
+              IF(o.Win = 'W', 1, 0) AS StreakCounter
+       FROM JoinHomeAway o
+       WHERE o.Home = '${team}' OR o.Away = '${team}'
+    ), AggregateStreakWins AS (
+       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
+           ORDER BY c.Date
+           ROWS ${streak} PRECEDING
+           ) AS AggregateStreak
+       FROM CreateCount c
+    ), ExclusiveOfCurrRow AS (
+       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'W', c.AggregateStreak - 1, c.AggregateStreak) AS PriorWinStreak
+       FROM AggregateStreakWins c
+    )
+    SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
+    FROM ExclusiveOfCurrRow c
+    WHERE c.PriorWinStreak >= '${streak}' AND Date >= '${startDate}'AND Date <= '${finalDate}';
+    
       
     
       `, function(error, results, fields) {
@@ -1080,7 +1112,7 @@ router.get('/winstreak', function(req, res) {
   
  });
 
-  /* Route #21: GETS the data for various betting strategies, when the user bets on a team given the team is on a large losing streak, specified by the odds  */
+  /* Route #21: GETS the data for various betting strategies, when the user bets against a team given the team is on a large losing streak, specified by the odds  */
 /* Request Path: “/losingstreak?betType=&wager=&team=*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
 /* Query Parameters: team, streak, and dates, which denotes the team that we are betting on */
@@ -1091,9 +1123,39 @@ router.get('/losingstreak', function(req, res) {
   const team = req.query.team ? req.query.team: 'Warriors'
   const startDate = req.query.start? req.query.start: "2012-10-30"
    const finalDate = req.query.end? req.query.end : "2019-04-10"
+   const streak = req.query.streak ? req.query.streak : 2
     console.log(wager)
     
-      connection.query(`
+      connection.query(`WITH RenameHome AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'home'
+    ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'away'
+    ), JoinHomeAway AS (
+        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = 'Celtics', H.Win, A.Win) AS Win
+        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+    ), CreateCount AS (
+       SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
+              IF(o.Win = 'L', 1, 0) AS StreakCounter
+       FROM JoinHomeAway o
+       WHERE o.Home = '${team}' OR o.Away = '${team}'
+    ), AggregateStreakLose AS (
+       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
+           ORDER BY c.Date
+           ROWS ${streak} PRECEDING
+           ) AS AggregateStreak
+       FROM CreateCount c
+    ), ExclusiveOfCurrRow AS (
+       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'L', c.AggregateStreak - 1, c.AggregateStreak) AS PriorLoseStreak
+       FROM AggregateStreakLose c
+    )
+    SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
+    FROM ExclusiveOfCurrRow c
+    WHERE c.PriorLoseStreak >= '${streak}' AND Date >= '${startDate}' AND Date <= '${finalDate}';
+    
       
     
       `, function(error, results, fields) {
@@ -1533,7 +1595,7 @@ router.post('/savequery', function(req, res) {
   var query = req.body.query;
   if (username != undefined)
 	{
-		db.addQuery(userName, query, function(err, data)
+		db.addQuery(username, query, function(err, data)
 		{
        res.json({query: "Saved!"})
 		});
