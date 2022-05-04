@@ -10,6 +10,7 @@ const Login = (props) => {
     const [password, setPassword] = useState("");
     const [signupValid, setSignupValid] = useState(false);
     const [incorrect, setIncorrect] = useState(false);
+    const [error, setError] = useState("");
     const [currentState, setCurrentState] = props.currentState;
 
     useEffect(() => {
@@ -32,7 +33,14 @@ const Login = (props) => {
         fetch('http://localhost:3000/login', requestOptions)
             .then(response => response.json())
             .then(data => 
-                console.log(data)
+                {
+                    if (Object.keys(data).includes("username")) {
+                        localStorage.setItem('username', data["username"]);
+                        window.location.href = 'http://localhost:8000/newquery'
+                    } else {
+                        setError(data["error"]);
+                    }
+                }
             )
             .catch(error => {
                 alert(error);
@@ -62,7 +70,7 @@ const Login = (props) => {
                         <input id="username" value={username} onChange={(event) => setUsername(event.target.value)} className="placeholder:italic placeholder:text-black block bg-white w-full border border-black rounded-md py-2 pl-9 pr-3 shadow-sm focus:outline-none focus:border-green-400 focus:ring-green-400 focus:ring-1 sm:text-sm" placeholder="johnnya_123" type="text" name="username"/>
                     </label>                                        
                 </div>
-                <div className="mb-2 mt-5">
+                <div className="mb-6 mt-5">
                     <p className="font-bold text-2xl mb-4">Password</p>
                     <label className="relative block">
                         <span className="sr-only">Password</span>
@@ -72,7 +80,10 @@ const Login = (props) => {
                         <input id="password" value={password} onChange={(event) => setPassword(event.target.value)} className="placeholder:italic placeholder:text-black block bg-white w-full border border-black rounded-md py-2 pl-9 pr-3 shadow-sm focus:outline-none focus:border-green-400 focus:ring-green-400 focus:ring-1 sm:text-sm" placeholder="xyzabcd" type="password" name="password"/>
                     </label>                                        
                 </div>
-                <div className="w-full mt-6">
+                {error !== "" ? <div className="text-red-800 animate-pulse mt-3">
+                    <p className="text-xl">{error}</p>
+                </div> : <Fragment></Fragment>}
+                <div className="w-full mt-4">
                     <button onClick={submitInfo} className="p-1 w-full text-xl border-2 border-black hover:text-green-400 hover:bg-white bg-green-400 hover:border-green-400 rounded-lg"><FontAwesomeIcon icon={ faDoorOpen }></FontAwesomeIcon> Log In</button>
                 </div>  
                 {signupValid ? <div className="text-green-400 text-3xl mt-4">

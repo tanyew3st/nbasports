@@ -1,10 +1,12 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHome, faPlus, faBook, faUser, faBasketball, faPencil, faDollar, faCalendar, faHandshake } from '@fortawesome/free-solid-svg-icons'
+import { faHome, faPlus, faDoorOpen, faBook, faUser, faBasketball, faPencil, faDollar, faCalendar, faHandshake } from '@fortawesome/free-solid-svg-icons'
 
 const Sidebar = (props) => {
     const [currentState, setCurrentState] = props.currentState;
+    const [loggedIn, setLoggedIn] = useState(false);
+
     const options = [
         {
             alias: "Home",
@@ -58,6 +60,19 @@ const Sidebar = (props) => {
         },
     ]
 
+    useEffect(() => {
+        if (localStorage.getItem("username")) {
+            setLoggedIn(localStorage.getItem("username"));
+        }
+    }, [localStorage])
+
+    const logout = () => {
+        if (localStorage.getItem("username")) {
+            setLoggedIn("");
+            localStorage.removeItem("username");
+        }
+    }
+
     return <Fragment> 
         <div className="bg-gray-800 h-full pt-10 pl-5 overflow-y-none flex flex-col">
             <div>
@@ -106,9 +121,21 @@ const Sidebar = (props) => {
                 </div>
             </div>
             <div className="align-bottom mt-auto mb-3">
-                <Link to="/login"><button onClick={() => setCurrentState("Login")} className={`text-xl mb-3 ${currentState === "login" || currentState === "signup" ? "text-green-400" : "text-white hover:text-gray-300" }`}>
-                <FontAwesomeIcon icon={ faUser } /> Login</button></Link>
+                <div>
+                    {!loggedIn ? <div>
+                        <Link to="/login"><button onClick={() => setCurrentState("Login")} className={`text-xl mb-3 ${currentState === "login" || currentState === "signup" ? "text-green-400" : "text-white hover:text-gray-300" }`}>
+                        <FontAwesomeIcon icon={ faUser } /> Login</button></Link>
+                    </div> : <div>
+                        <Link to="/newquery"><button onClick={() => setCurrentState("Team")} className={`text-xl mb-3 text-white hover:text-gray-300`}>
+                        <FontAwesomeIcon icon={ faUser } /> { loggedIn }</button></Link>
+                    </div>}
+                    {loggedIn && <div>
+                        <Link to="/home"><button onClick={logout} className={`text-xl mb-3 ${currentState === "login" || currentState === "signup" ? "text-green-400" : "text-white hover:text-gray-300" }`}>
+                        <FontAwesomeIcon icon={ faDoorOpen } /> Logout</button></Link>
+                    </div>}
+                </div>
             </div>
+
         </div>  
     </Fragment>
 }

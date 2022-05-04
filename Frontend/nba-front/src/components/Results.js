@@ -39,7 +39,39 @@ const Results = (props) => {
         newObj["Forms"] = params;
         newObj["Strategy"] = finalStrategy;
         newObj["Final Winnings"] = finalWinnings;
-        console.log(newObj);
+        
+        if (!localStorage.getItem("username")) {
+            window.location.href = "/login";
+        }
+
+        const postObj = {
+            "query": newObj,
+            "username": localStorage.getItem("username"),
+        }
+
+        console.log(postObj);
+
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postObj)
+        };
+
+        fetch('http://localhost:3000/savequery', requestOptions)
+            .then(response => response.json())
+            .then(data => 
+                {
+                    if (Object.keys(data).includes('error')) {
+                        console.log(data);
+                    } else {
+                        console.log(data);
+                        // window.location.href = "/login?success=true";
+                    }
+                }
+            )
+            .catch(error => {
+                console.log("error");
+            })
     }
 
     const stepTowards = (finalWinnings) => {
