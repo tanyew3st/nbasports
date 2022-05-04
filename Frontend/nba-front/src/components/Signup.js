@@ -9,6 +9,7 @@ const Signup = (props) => {
     const [email, setEmail] = useState("");
     const [fname, setFname] = useState("");
     const [lname, setLname] = useState("");
+    const [error, setError] = useState("");
     const [incorrect, setIncorrect] = useState("");
     const [currentState, setCurrentState] = props.currentState;
 
@@ -18,7 +19,7 @@ const Signup = (props) => {
             "password": password,
             "firstname": fname,
             "lastname": lname,
-            "email": email
+            "emailaddress": email
         }
 
         console.log(JSON.stringify(reqBody));
@@ -32,10 +33,17 @@ const Signup = (props) => {
         fetch('http://localhost:3000/adduser', requestOptions)
             .then(response => response.json())
             .then(data => 
-                console.log(data)
+                {
+                    if (Object.keys(data).includes('error')) {
+                        setError(data['error']);
+                    } else {
+                        setCurrentState("Login");
+                        window.location.href = "/login?success=true";
+                    }
+                }
             )
             .catch(error => {
-                console.log(error);
+                setError(error["error"])
             })
         
     }
@@ -44,7 +52,7 @@ const Signup = (props) => {
         <div className="h-full flex flex-col ml-10 mr-10">
             <div>
                 <FontAwesomeIcon 
-                    className={`border-black p-4 mt-8 border-2 rounded-full w-child ${incorrect ? "text-red-700 animate-pulse" : "hover:text-green-400"} `} 
+                    className={`border-black p-4 mt-8 border-2 rounded-full w-child ${error != "" ? "text-red-700 animate-pulse" : "hover:text-green-400"} `} 
                     icon={ faPencil } size="3x" />
             </div>
             <div className="basis-1/4">
@@ -94,7 +102,7 @@ const Signup = (props) => {
                         <input id="username" value={username} onChange={(event) => setUsername(event.target.value)} className="placeholder:italic placeholder:text-black block bg-white w-full border border-black rounded-md py-2 pl-9 pr-3 shadow-sm focus:outline-none focus:border-green-400 focus:ring-green-400 focus:ring-1 sm:text-sm" placeholder="johnnya_123" type="text" name="username"/>
                     </label>                                        
                 </div>
-                <div className="mb-2 mt-5">
+                <div className="mt-5 mb-7">
                     <p className="font-bold text-2xl mb-4">Password</p>
                     <label className="relative block">
                         <span className="sr-only">Password</span>
@@ -104,7 +112,10 @@ const Signup = (props) => {
                         <input id="password" value={password} onChange={(event) => setPassword(event.target.value)} className="placeholder:italic placeholder:text-black block bg-white w-full border border-black rounded-md py-2 pl-9 pr-3 shadow-sm focus:outline-none focus:border-green-400 focus:ring-green-400 focus:ring-1 sm:text-sm" placeholder="xyzabcd" type="password" name="password"/>
                     </label>                                        
                 </div>
-                <div className="w-full mt-9 mb-9">
+                {error !== "" ? <div className="text-red-800 animate-pulse mb-3">
+                    <p className="text-xl">{error}</p>
+                </div> : <Fragment></Fragment>}
+                <div className="w-full mb-9">
                     <button onClick={submitInfo} className="p-1 w-full text-xl border-2 border-black hover:text-green-400 hover:bg-white bg-green-400 hover:border-green-400 rounded-lg"><FontAwesomeIcon icon={ faShoppingBag }></FontAwesomeIcon> Sign Up</button>
                 </div>  
         </div>

@@ -1,6 +1,7 @@
 import Container from './components/Container.js';
 import Results from './components/Results.js';
 import Login from './components/Login.js';
+import { useEffect } from 'react';
 
 import './App.css';
 import { useState } from 'react';
@@ -9,6 +10,19 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 const App = () => {
 
   const [currentState, setCurrentState] = useState('Home');
+
+  useEffect(() => {
+    if (window.location.href.includes("login")) {
+      setCurrentState("Login");
+    }
+    if (window.location.href.includes("signup")) {
+      setCurrentState("Signup");
+    }
+    if (window.location.href.includes("newquery") && currentState === "Home") {
+      setCurrentState("Team");
+    }
+  }, [window.location.href])
+
 
   return (
     <Router>

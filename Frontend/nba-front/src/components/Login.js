@@ -1,14 +1,21 @@
 import { faUser, faDoorOpen, faLock } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useState } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { Link } from 'react-router-dom'
+import queryString from 'query-string';
 
 const Login = (props) => {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [signupValid, setSignupValid] = useState(false);
     const [incorrect, setIncorrect] = useState(false);
     const [currentState, setCurrentState] = props.currentState;
+
+    useEffect(() => {
+        setSignupValid(() => {return window.location.href.includes("success=true") ? true : false})
+    }, [])
+
 
     const submitInfo = () => {
         const reqBody = {
@@ -22,7 +29,7 @@ const Login = (props) => {
             body: JSON.stringify(reqBody)
         };
 
-        fetch('http://localhost:8080/login', requestOptions)
+        fetch('http://localhost:3000/login', requestOptions)
             .then(response => response.json())
             .then(data => 
                 console.log(data)
@@ -68,6 +75,9 @@ const Login = (props) => {
                 <div className="w-full mt-6">
                     <button onClick={submitInfo} className="p-1 w-full text-xl border-2 border-black hover:text-green-400 hover:bg-white bg-green-400 hover:border-green-400 rounded-lg"><FontAwesomeIcon icon={ faDoorOpen }></FontAwesomeIcon> Log In</button>
                 </div>  
+                {signupValid ? <div className="text-green-400 text-3xl mt-4">
+                    <p>Signup Success<span className="animate-ping">!</span></p>
+                </div> : <Fragment></Fragment>}
         </div>
     </div>
 
