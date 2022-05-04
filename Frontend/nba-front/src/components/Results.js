@@ -28,16 +28,16 @@ const Results = (props) => {
         const newObj = {};
         newObj["Wage Strategy"] = params["betType"];
         delete params["betType"];
-        newObj["End Date"] = params["endDate"];
-        delete params["endDate"];
-        newObj["Start Date"] = params["startDate"];
-        delete params["startDate"];
+        newObj["End Date"] = params["end"];
+        delete params["end"];
+        newObj["Start Date"] = params["start"];
+        delete params["start"];
         newObj["Wager"] = params["wager"];
         delete params["wager"];
         newObj["Team"] = params["team"];
         delete params["team"];
         newObj["Forms"] = params;
-        newObj["Strategy"] = ending;
+        newObj["Strategy"] = finalStrategy;
         newObj["Final Winnings"] = finalWinnings;
         console.log(newObj);
     }
