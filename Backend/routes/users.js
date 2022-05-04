@@ -60,16 +60,22 @@ var add_Query = function(username, query, callback) {
 	var params = {
       Item: {
         "username": { "S" : username },
-		"query": { "S" : query },
+		    "query": { "S" : query },
       },
       TableName: "Queries",
   };
 
   db.putItem(params, function(err, data){
     if (err)
+    {
+      console.log(err)
       callback(err)
+    }
     else
+    {
+      console.log("YAY!")
       callback(null, 'Success')
+    }
   });
 }
 

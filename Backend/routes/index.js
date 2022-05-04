@@ -1074,7 +1074,7 @@ router.get('/winstreak', function(req, res) {
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
     ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = 'Celtics', H.Win, A.Win) AS Win
+        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home =  '${team}',  H.Win, A.Win) AS Win
         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
     ), CreateCount AS (
        SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
@@ -1135,7 +1135,7 @@ router.get('/losingstreak', function(req, res) {
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
     ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = 'Celtics', H.Win, A.Win) AS Win
+        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
     ), CreateCount AS (
        SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
@@ -1597,6 +1597,7 @@ router.post('/savequery', function(req, res) {
 	{
 		db.addQuery(username, query, function(err, data)
 		{
+       console.log(data);
        res.json({query: "Saved!"})
 		});
 	}
