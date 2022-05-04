@@ -1527,6 +1527,37 @@ router.post('/login', function(req, res) {
 	});
 });
 
+/* Route #26: Add a query to the DynamoDB Table */
+router.post('/savequery', function(req, res) {
+  var username = req.body.username;
+  var query = req.body.query;
+  if (username != undefined)
+	{
+		db.addQuery(userName, query, function(err, data)
+		{
+       res.json({query: "Saved!"})
+		});
+	}
+});
+
+/* Route #26: Add a query to the DynamoDB Table */
+router.post('/getqueries', function(req, res) {
+  var username = req.body.username;
+  if (username != undefined)
+	{
+		db.queriesofuser(username, function(err, data) {
+      const queries = [];
+      for (var l = 0; l < data.length; l++)
+      {
+      queries.push(data[l].query.S);
+      }
+      res.json({queriesList: queries})
+    });
+	}
+});
+
+
+
 
 
  

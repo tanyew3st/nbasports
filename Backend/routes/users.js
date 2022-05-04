@@ -55,6 +55,46 @@ var myDB_lookup = function(username, callback) {
   });
 }
 
+//adds a friend for a user
+var add_Query = function(username, query, callback) {		
+	var params = {
+      Item: {
+        "username": { "S" : username },
+		"query": { "S" : query },
+      },
+      TableName: "Queries",
+  };
+
+  db.putItem(params, function(err, data){
+    if (err)
+      callback(err)
+    else
+      callback(null, 'Success')
+  });
+}
+
+//gets a list of all friends of the user
+var queries_Of_User = function(username, callback) {	
+  var params = {
+	TableName : "Queries",
+	KeyConditionExpression: "#un = :string1",
+	ExpressionAttributeNames: {
+        "#un": "username",
+    },
+	ExpressionAttributeValues: {
+	  ":string1": { "S" : username },
+	},
+  };
+	
+	db.query(params, function(err, data) {
+      if (err) {
+        callback(err, null);
+      } else {
+        callback(err, data.Items);
+      }
+    });
+}
+
 /* We define an object with one field for each method. For instance, below we have
    a 'lookup' field, which is set to the myDB_lookup function. In routes.js, we can
    then invoke db.lookup(...), and that call will be routed to myDB_lookup(...). */
@@ -63,7 +103,9 @@ var myDB_lookup = function(username, callback) {
 
 var database = { 
 	addUser: add_User,
-  lookup: myDB_lookup
+  lookup: myDB_lookup,
+  addQuery: add_Query,
+  queriesofuser: queries_Of_User
 };
 
 module.exports = database;

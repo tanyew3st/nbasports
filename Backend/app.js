@@ -48,6 +48,8 @@ app.use('/likedteam', indexRouter);
 app.use('/homerecovery', indexRouter);
 app.use('/adduser', indexRouter);
 app.use('/login', indexRouter);
+app.use('/savequery', indexRouter);
+app.use('/getqueries', indexRouter);
 
 
 // catch 404 and forward to error handler
