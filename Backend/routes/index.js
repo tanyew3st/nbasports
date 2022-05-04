@@ -1521,7 +1521,7 @@ router.post('/login', function(req, res) {
 		}
 		else
 		{
-      res.json({error: "This username dooes not exist. Try again!"})
+      res.json({error: "This username does not exist. Try again!"})
 		}
 
 	});
