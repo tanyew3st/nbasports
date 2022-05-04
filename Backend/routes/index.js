@@ -1551,7 +1551,7 @@ router.post('/adduser', function(req, res) {
                   console.log(err);
                 }
                 else{
-                  res.json({username: "username"})
+                  res.json({username: userName})
                 }
                 
             }
@@ -1574,7 +1574,7 @@ router.post('/login', function(req, res) {
 			var hashedPassword = CryptoJS.SHA256(password).toString();
 			if (data == hashedPassword)
 			{
-        res.json({username: "username"})
+        res.json({username: username})
 			}
 			else
 			{
