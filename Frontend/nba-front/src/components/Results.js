@@ -46,7 +46,7 @@ const Results = (props) => {
 
         const postObj = {
             "query": newObj,
-            "username": localStorage.getItem("username"),
+            "username": JSON.stringify(localStorage.getItem("username")),
         }
 
         console.log(postObj);
