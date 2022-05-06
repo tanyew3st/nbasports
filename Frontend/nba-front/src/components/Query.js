@@ -82,7 +82,7 @@ const Query = (props) => {
 
         const f = {}
         for (const form of Object.keys(chosenStrategy.form)) {
-            chosenStrategy.form[form] === "integer" ? f[form] = 0 : (chosenStrategy.form[form] == "odds" ? f[form]=-100 : f[form] = "")
+            chosenStrategy.form[form] === "integer" ? f[form] = 0 : (chosenStrategy.form[form] === "odds" ? f[form]=-100 : f[form] = "")
             if (chosenStrategy.form[form] === "player") { f[form] = players[0]["PlayerName"]}
         }
         setFormData(f);

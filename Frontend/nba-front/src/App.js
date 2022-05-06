@@ -21,6 +21,9 @@ const App = () => {
     if (window.location.href.includes("newquery") && currentState === "Home") {
       setCurrentState("Team");
     }
+    if (window.location.href.includes("myqueries")) {
+      setCurrentState("MyQueries");
+    }
   }, [window.location.href])
 
 
@@ -28,10 +31,11 @@ const App = () => {
     <Router>
       <Routes>
           <Route path="/newquery" element={<Container currentState={[currentState, setCurrentState]}/>} />
+          <Route path="/myqueries" element={<Container currentState={[currentState, setCurrentState]}/>} />
           <Route path="/query/*" element={<Results currentState={[currentState, setCurrentState]}/>} />
-          <Route path="/home" element={<Container currentState={[currentState, setCurrentState]}/>} />
           <Route path="/login" element={<Container currentState={[currentState, setCurrentState]}/>} />
           <Route path="/signup" element={<Container currentState={[currentState, setCurrentState]}/>} />
+          <Route path="/*" element={<Container currentState={[currentState, setCurrentState]}/>} />
       </Routes>
     </Router>
   );

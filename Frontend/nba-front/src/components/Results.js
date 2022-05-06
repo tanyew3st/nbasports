@@ -39,14 +39,15 @@ const Results = (props) => {
         newObj["Forms"] = params;
         newObj["Strategy"] = finalStrategy;
         newObj["Final Winnings"] = finalWinnings;
+        newObj["Query"] = beg;
         
         if (!localStorage.getItem("username")) {
             window.location.href = "/login";
         }
 
         const postObj = {
-            "query": newObj,
-            "username": JSON.stringify(localStorage.getItem("username")),
+            "query": JSON.stringify(newObj),
+            "username": localStorage.getItem("username"),
         }
 
         console.log(postObj);
@@ -150,10 +151,10 @@ const Results = (props) => {
                     <p className="text-5xl text-center font-bold m-10">Results</p>
                     <div className="flex flex-row">
                         <div className="ml-4 w-1/2">
-                            <button onClick={() => setView("table")} className={`border-black border-2 text-xl w-full rounded-l-lg ${view == "table" ? "bg-black text-green-400" : ""}`}>Table</button>
+                            <button onClick={() => setView("table")} className={`border-black border-2 text-xl w-full rounded-l-lg ${view === "table" ? "bg-black text-green-400" : ""}`}>Table</button>
                         </div>
                         <div className="mr-4 w-1/2">
-                            <button onClick={() => {setView("graph")} } className={`border-black border-2 text-xl w-full rounded-r-lg ${view == "graph" ? "bg-black text-green-400" : ""}`}>Graph</button>
+                            <button onClick={() => {setView("graph")} } className={`border-black border-2 text-xl w-full rounded-r-lg ${view === "graph" ? "bg-black text-green-400" : ""}`}>Graph</button>
                         </div>
                     </div>
                     <div className="flex flex-row mt-5">
@@ -180,7 +181,7 @@ const Results = (props) => {
                         </thead>
                         <tbody>
                             {results.map((result, i) => 
-                            <Fragment>{(result["Win"] === "W" && !hideWins || result["Win"] == "L" && !hideLosses) ? (
+                            <Fragment>{(result["Win"] === "W" && !hideWins || result["Win"] === "L" && !hideLosses) ? (
                             <tr className={`overflow-y-scroll border-black border-2 ${result["Win"] === "W" ? "bg-green-100" : "bg-white"}`}>
                                 <td className="border-black border-2 p-2 text-center">{i + 1}</td>
                                 <td className="border-black border-2 p-2 text-center">{result["GameID"]}</td>
