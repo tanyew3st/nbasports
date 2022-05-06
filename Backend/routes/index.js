@@ -1610,11 +1610,19 @@ router.post('/getqueries', function(req, res) {
 	{
 		db.queriesofuser(username, function(err, data) {
       const queries = [];
+      if (data != undefined && data != null)
+      {
       for (var l = 0; l < data.length; l++)
       {
       queries.push(data[l].query.S);
       }
       res.json({queriesList: queries})
+      }
+      else
+      {
+      res.json({queriesList: "You have no queries saved!"})
+      }
+     
     });
 	}
 });

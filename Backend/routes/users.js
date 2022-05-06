@@ -60,8 +60,8 @@ var myDB_lookup = function(username, callback) {
 var add_Query = function(username, query, callback) {		
 	var params = {
       Item: {
-		    "query": { "S" : query },
         "username": { "S" : username },
+		    "query": { "S" : query },
       },
       TableName: "Queries",
   };
@@ -82,26 +82,30 @@ var add_Query = function(username, query, callback) {
   });
 }
 
-//gets a list of all friends of the user
-var queries_Of_User = function(username, callback) {	
+
+//modified the lookup function to query the user table
+var queries_Of_User = function(username, callback) {
+
   var params = {
-	TableName : "Queries",
-	KeyConditionExpression: "#un = :string1",
-	ExpressionAttributeNames: {
-        "#un": "username",
-    },
-	ExpressionAttributeValues: {
-	  ":string1": { "S" : username },
-	},
+      KeyConditions: {
+        username: {
+          ComparisonOperator: 'EQ',
+          AttributeValueList: [ { S: username } ]
+        }
+      },
+      TableName: "Queries",
+      AttributesToGet: [ 'query' ]
   };
-	
-	db.query(params, function(err, data) {
-      if (err) {
-        callback(err, null);
-      } else {
-        callback(err, data.Items);
-      }
-    });
+
+  db.query(params, function(err, data) {
+    
+    if (err || data.Items.length == 0) {
+      callback(err, null);
+      
+    } else {
+      callback(err, data.Items);
+    }	
+  });
 }
 
 /* We define an object with one field for each method. For instance, below we have
