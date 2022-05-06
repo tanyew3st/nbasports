@@ -21,6 +21,10 @@ const Results = (props) => {
     let inter;
 
     const saveQuery = () => {
+        if (!localStorage.getItem('username')) {
+            window.location.href = "/login";
+        }
+
         const beg = window.location.href.split("query/")[1];
         const finalStrategy = beg.split("?")[0];
         const [_, ending] = window.location.href.split("?");
