@@ -1,6 +1,7 @@
 var AWS = require('aws-sdk');
 AWS.config.update({region:'us-east-1'});
 var db = new AWS.DynamoDB();
+var count = 0;
 
 
 //this is the query to add a user to the users table
@@ -59,11 +60,13 @@ var myDB_lookup = function(username, callback) {
 var add_Query = function(username, query, callback) {		
 	var params = {
       Item: {
-        "username": { "S" : username },
 		    "query": { "S" : query },
+        "username": { "S" : username },
       },
       TableName: "Queries",
   };
+
+  count++;
 
   db.putItem(params, function(err, data){
     if (err)
