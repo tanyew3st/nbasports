@@ -2,6 +2,7 @@ import Sidebar from './Sidebar.js'
 import Query from './Query.js'
 import Home from './Home.js'
 import Login from './Login.js'
+import Signup from './Signup.js'
 import SavedQueries from './SavedQueries.js'
 import React, { Fragment, useState } from 'react'
 
@@ -22,7 +23,7 @@ const Container = (props) => {
                     <Query currentState={[currentState, setCurrentState]}></Query>
                 : (currentState === "Home" ? <Home currentState={[currentState, setCurrentState]}></Home> : <Fragment>{
                     currentState === "Login" ? <Login currentState={[currentState, setCurrentState]}></Login> : 
-                    <Fragment>{currentState === "Queries" ? <SavedQueries currentState={[currentState, setCurrentState]}></SavedQueries> : <Fragment></Fragment>}</Fragment>}</Fragment>)} 
+                    <Fragment>{currentState === "Queries" ? <SavedQueries currentState={[currentState, setCurrentState]}></SavedQueries> : <Signup currentState={[currentState, setCurrentState]}></Signup>}</Fragment>}</Fragment>)} 
             </div>
         </div>
     </Fragment>;
