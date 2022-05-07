@@ -474,7 +474,23 @@ router.get('/onload', function(req, res) {
                       "route": "homerecovery",
                       "form" :
                       {
-                      },}], 
+                      },}, 
+                      {
+                        "name": "Road Recovery Bet",
+                        "description": " Gets the data for various betting strategies, when the user bets on a road team that had a crushing loss and their previous game and are now favored on the road over an interval",
+                        "route": "roadrecovery",
+                        "form" :
+                        {
+                          "previousdefeatby"         : "integer"
+                        },}, 
+                        {
+                          "name": "Blowout Bet",
+                          "description": " Gets the data for various betting strategies, when the user bets on a team that won their previous game by a blowout and are favored again to win over an interval",
+                          "route": "blowout",
+                          "form" :
+                          {
+                            "previouswinby"         : "integer"
+                          },}], 
     "Wage Strategies" :
     [{
       "name": "Constant",
@@ -738,7 +754,7 @@ router.get('/winstreak', function(req, res) {
     });
  });
 
-  /* Route #21: GETS the data for various betting strategies, when the user bets against a team given the team is on a large losing streak, specified by the odds  */
+  /* Route #13: GETS the data for various betting strategies, when the user bets against a team given the team is on a large losing streak, specified by the odds  */
 /* Request Path: “/losingstreak?betType=&wager=&team=*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
 /* Query Parameters: team, streak, and dates, which denotes the team that we are betting on */
@@ -805,7 +821,7 @@ router.get('/losingstreak', function(req, res) {
     });
  });
 
-  /* Route #22: GETS the data for various betting strategies, when the user bets on a team given the that they like that team, specified by the odds  */
+  /* Route #14: GETS the data for various betting strategies, when the user bets on a team given the that they like that team, specified by the odds  */
 /* Request Path: “/likedteam?betType=&wager=&team=*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
 /* Query Parameters: team, and dates, which denotes the team that we are betting on */
@@ -856,9 +872,87 @@ router.get('/likedteam', function(req, res) {
     });
  });
 
-//  ROUTE 22.5: BACK TO BACK BLOWOUT
+//  ROUTE 15: BACK TO BACK BLOWOUT
+router.get('/blowout', function(req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team: 'Warriors'
+  const startDate = req.query.start? req.query.start: "2012-10-30"
+   const finalDate = req.query.end? req.query.end : "2019-04-10"
+   const previouswinby = req.query.previouswinby ? req.query.previouswinby: 15
+    console.log(wager)
+    connectionPool.getConnection(function(err, connection) { 
+      if (err)
+      {
+          connection.release();
+          throw err;
+      }
+      connection.query(`WITH RenameHome AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'home'
+     ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'away'
+     ), HSpread AS (
+         SELECT H.*, O.BestLineSpread as HomeSpread
+         FROM Odds O JOIN RenameHome H ON (H.GameID = O.GameID)
+         WHERE (O.Location = 'home') AND (O.Date <= '${finalDate}') AND (O.Date >= '${startDate}')
+     ), ASpread AS (
+         SELECT A.*, O.BestLineSpread as AwaySpread
+         FROM Odds O JOIN RenameAway A ON (A.GameID = O.GameID)
+         WHERE (O.Location = 'away') AND (O.Date <= '${finalDate}') AND (O.Date >= '${startDate}')
+     ), JoinHomeAway AS (
+         SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds,
+                IF(H.Home = '${team}', H.Win, A.Win) AS Win, IF (H.Home = '${team}', H.HomeSpread, A.AwaySpread) AS Spread
+         FROM HSpread H JOIN ASpread A ON H.GameId = A.GameId
+         WHERE (H.Home = '${team}' OR A.Away = '${team}')
+     ), PointDifference AS (
+         SELECT G.GameDate, G.GameID, ABS(G.HomePoints - G.AwayPoints) AS Difference
+         FROM Games G
+         WHERE (G.HomeTeamID IN (
+             SELECT TeamId
+             FROM Teams
+             WHERE (Teams.Nickname = '${team}')
+             ))
+         OR (G.VisitorTeamID IN (
+             SELECT TeamId
+             FROM Teams
+             WHERE (Teams.Nickname = '${team}')
+             ))
+     ), SpreadAndDif AS (
+         SELECT J.Date, PD.GameID AS GameID, J.Home, J.Away, J.Bet,
+                J.HomeODds, J.AwayOdds, J.Spread, J.Win, PD.Difference
+         FROM PointDifference PD
+                  JOIN JoinHomeAway J ON (PD.GameID = J.GameID)
+         WHERE (J.Home = '${team}' OR J.Away = '${team}')
+     ), PrevGames AS (
+         SELECT *, LAG(Win, 1) OVER (ORDER BY GameID) AS PrevWin, LAG(Difference, 1) OVER (ORDER BY GameID) AS PrevDif
+         FROM SpreadAndDif S
+     )
+     SELECT P.GameID, P.Date, P.Home, P.Away, P.Bet AS BetAgainst, P.HomeOdds, P.AwayOdds,
+            IF((P.Difference <= ABS(Spread) AND P.Win = 'W') OR P.Win = 'W', 'W', 'L') AS Win
+     FROM PrevGames P
+     WHERE (P.Home = '${team}' AND P.Spread <= '-10' AND P.PrevDif >= '${previouswinby}' AND P.PrevWin = 'W')
+     
+     
+     `, function(error, results, fields) {
+        if (error) {
+          console.log(error)
+          res.json({error: error})
+        }
+        else if (results) {
+          results = addingWage(results, betType, wager)
+          res.json({results: results})
+        }
+        connection.release();
+      });
+  
+    });
+ });
 
-  /* Route #23: GETS the data for various betting strategies, when the user bets on a team given they shot poorly in the previous game and are now at home, specified by the odds  */
+  /* Route #16: GETS the data for various betting strategies, when the user bets on a team given they shot poorly in the previous game and are now at home, specified by the odds  */
 /* Request Path: “/homerecovery?betType=&wager=&team=*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
 /* Query Parameters: team and dates, which denotes the team that we are betting on */
@@ -940,8 +1034,75 @@ router.get('/homerecovery', function(req, res) {
     });
  });
 
-//  ROUTE #23.5: RoadFavorite
-
+//  ROUTE #17: RoadFavorite
+router.get('/roadrecovery', function(req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team: 'Warriors'
+  const startDate = req.query.start? req.query.start: "2012-10-30"
+   const finalDate = req.query.end? req.query.end : "2019-04-10"
+   const previousdefeatby = req.query.previousdefeatby ? req.query.previousdefeatby: 15
+    console.log(wager)
+    connectionPool.getConnection(function(err, connection) { 
+      if (err)
+      {
+          connection.release();
+          throw err;
+      }
+      connection.query(`WITH RenameHome AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'home' AND (O.Date >= ${startDate}) AND (O.Date  >= ${finalDate})
+     ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
+        FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+        WHERE O.Location = 'away' AND (O.Date >= ${startDate}) AND (O.Date  >= ${finalDate})
+     ), JoinHomeAway AS (
+         SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}
+     ' AS Bet, H.HomeOdds, A.AwayOdds,
+                IF(H.Home = '${team}', H.Win, A.Win) AS Win
+         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+         WHERE (H.Home = '${team}' OR A.Away = '${team}')
+     ), PointDifference AS (
+         SELECT G.GameID, G.GameDate,
+                ABS(G.HomePoints - G.AwayPoints) AS Difference, J.Win, J.Home, J.Away, J.Bet, J.HomeOdds, J.AwayOdds
+         FROM Games G JOIN JoinHomeAway J ON (G.GameID = J.GameID)
+         WHERE (G.HomeTeamID IN (
+             SELECT TeamId
+             FROM Teams
+             WHERE (Teams.Nickname = '${team}')
+             ))
+         OR (G.VisitorTeamID IN (
+             SELECT TeamId
+             FROM Teams
+             WHERE (Teams.Nickname = '${team}')
+             ))
+     ), PrevGame AS (
+         SELECT *, LAG(GameID, 1) OVER (ORDER BY GameID) AS PrevGame, LAG(Win, 1) OVER (ORDER BY GameID) AS PrevWin,
+                LAG(Difference, 1) OVER (ORDER BY GameID) AS PrevDif
+         FROM PointDifference S
+         WHERE (S.Away = '${team}')
+     )
+     SELECT P.GameID, P.GameDate AS Date, P.Home, P.Away, P.Bet, P.HomeOdds, P.AwayOdds, P.Win
+     FROM PrevGame P
+     WHERE (P.PrevDif >= '${previousdefeatby}' AND P.PrevWin = 'L')
+     ORDER BY GameID
+     
+     
+     `, function(error, results, fields) {
+        if (error) {
+          console.log(error)
+          res.json({error: error})
+        }
+        else if (results) {
+          results = addingWage(results, betType, wager)
+          res.json({results: results})
+        }
+        connection.release();
+      });
+  
+    });
+ });
 
 function addingWage(results, betType, wager)
 {
@@ -1180,7 +1341,7 @@ function addingWage(results, betType, wager)
          return results;
 }
 
-/* Route #24: Add a user to the DynamoDB Table */
+/* Route #18: Add a user to the DynamoDB Table */
 router.post('/adduser', function(req, res) {
     var userName = req.body.username;
     db.lookup(userName, function(err, data) {
@@ -1216,7 +1377,7 @@ router.post('/adduser', function(req, res) {
 
 });
 
-/* Route #25: Check that a user is in the DynamoDB Table */
+/* Route #19: Check that a user is in the DynamoDB Table */
 router.post('/login', function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
@@ -1243,7 +1404,7 @@ router.post('/login', function(req, res) {
 	});
 });
 
-/* Route #26: Add a query to the DynamoDB Table */
+/* Route #20: Add a query to the DynamoDB Table */
 router.post('/savequery', function(req, res) {
   var username = req.body.username;
   var query = req.body.query;
@@ -1257,7 +1418,7 @@ router.post('/savequery', function(req, res) {
 	}
 });
 
-/* Route #26: Add a query to the DynamoDB Table */
+/* Route #21: Add a query to the DynamoDB Table */
 router.post('/getqueries', function(req, res) {
   var username = req.body.username;
   if (username != undefined)
