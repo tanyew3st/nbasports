@@ -11,7 +11,9 @@ const SavedQueries = () => {
 
     useEffect(() => {
         if (!localStorage.getItem('username')) {
+            alert("You must Login!");
             window.location.href = "/login";
+            return;
         }
 
         const requestOptions = {
@@ -45,7 +47,7 @@ const SavedQueries = () => {
                 }
             )
             .catch(error => {
-                console.log(error);
+                alert(error);
             })
 
         fetch('http://localhost:3000/getqueries', requestOptions)
@@ -71,21 +73,15 @@ const SavedQueries = () => {
                             delete query[dat]["Forms"];
                         }
 
-                        console.log(query);
                     }
 
                     setQueries(query);
                 }
             )
             .catch(error => {
-                console.log(error);
+                alert(error);
             })
     }, []);
-
-    if (selectedQuery !== -1) {
-        console.log(Object.keys(queries[selectedQuery]));
-    }
-
     return <Fragment>
         {/* need reverse mappings and need to be able to  */}
         <div className="h-full flex flex-row">

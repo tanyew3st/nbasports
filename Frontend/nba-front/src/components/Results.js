@@ -126,7 +126,7 @@ const Results = (props) => {
                 const num = [];
                 let i = 1;
 
-                if (data.results.length === 0) {
+                if (!data.results || data.results.length === 0) {
                     alert("No Games Returned!");
                     window.location.href = "http://localhost:8000/newquery";
                     return;
