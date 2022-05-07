@@ -17,6 +17,8 @@
     "@themesberg/tailwind-datepicker": "^1.1.0",
     "chart.js": "^3.7.1",
     "font-awesome": "^4.7.0",
+    "jest-watch-typeahead": "^1.1.0",
+    "jest-watcher": "^28.1.0",
     "query-string": "^7.1.1",
     "react": "^18.0.0",
     "react-chartjs-2": "^4.1.0",

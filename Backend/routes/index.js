@@ -197,12 +197,12 @@ router.get('/ifbetplayer', function(req, res) {
         throw err;
     }
      connection.query(`WITH HomeTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.BetOnlineML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.BetOnlineML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.BetonlineML AS BettedAverageLineML
       FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
       WHERE O.Location = 'Home' AND GD.PlayerName = '${player}'
       ORDER BY O.Date ASC
      ), AwayTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.BetOnlineML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.BetOnlineML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.BetOnlineML AS BettedAverageLineML
       FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
       WHERE O.Location = 'Away' AND GD.PlayerName = '${player}'
       ORDER BY O.Date ASC
