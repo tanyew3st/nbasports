@@ -22,7 +22,7 @@ const App = () => {
       setCurrentState("Team");
     }
     if (window.location.href.includes("myqueries")) {
-      setCurrentState("MyQueries");
+      setCurrentState("Queries");
     }
   }, [window.location.href])
 

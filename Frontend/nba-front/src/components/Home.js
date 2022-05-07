@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { YoutubeBackground } from 'react-youtube-background'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHome, faPlus, faUser, faBasketball, faPencil, faDollar, faCalendar, faHandshake } from '@fortawesome/free-solid-svg-icons'
 

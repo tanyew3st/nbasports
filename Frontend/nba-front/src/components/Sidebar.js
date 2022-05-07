@@ -84,7 +84,7 @@ const Sidebar = (props) => {
                     <FontAwesomeIcon icon={ faHome } /> Home</button></Link> 
                 </div>
                 <div>
-                    <Link to="/newquery"><button className={`text-xl mb-3 hover:text-gray-300
+                    <Link to="/myqueries"><button className={`text-xl mb-3 hover:text-gray-300
                         ${currentState === "Queries" ? "text-green-400" : "text-white" }`}
                     onClick={() => {
                         setCurrentState("Queries");
