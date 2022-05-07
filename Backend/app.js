@@ -13,7 +13,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 var cors = require('cors')
-app.use(cors({ credentials: true, origin: ['*'] }));
+app.use(cors({ credentials: true, origin: ['http://localhost:8000', 'http://localhost:3000'] }));
 
 
 
