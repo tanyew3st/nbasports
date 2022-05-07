@@ -55,8 +55,6 @@ const Results = (props) => {
             "username": localStorage.getItem("username"),
         }
 
-        console.log(postObj);
-
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -68,9 +66,8 @@ const Results = (props) => {
             .then(data => 
                 {
                     if (Object.keys(data).includes('error')) {
-                        console.log(data);
+                        alert("There was an error");
                     } else {
-                        console.log(data);
                         // window.location.href = "/login?success=true";
                     }
 
@@ -79,7 +76,7 @@ const Results = (props) => {
                 }
             )
             .catch(error => {
-                console.log("error");
+                alert("error");
             })
     }
 
@@ -128,6 +125,13 @@ const Results = (props) => {
                 const money = [];
                 const num = [];
                 let i = 1;
+
+                if (data.results.length === 0) {
+                    alert("No Games Returned!");
+                    window.location.href = "http://localhost:8000/newquery";
+                    return;
+                }
+
                 const finalWinnings = data.results[data.results.length - 1]["totalwinnings"];
                 setFinalWinnings(finalWinnings);
                 setResults(data.results);

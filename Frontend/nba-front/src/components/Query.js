@@ -60,9 +60,7 @@ const Query = (props) => {
         location += "&start=" + startDate;
         location += "&end=" + endDate;
         location += "&betType=" + chosenWageStrategy["name"];
-        console.log(formData);
         for (const form of Object.keys(formData)) {
-            console.log("&" + form + `=${formData[form]}`);
             location += "&" + form + `=${formData[form]}`;
         }
         window.location.href = "/query/" + location;
@@ -72,7 +70,6 @@ const Query = (props) => {
         // also want to initialize the formData object
 
         if (Object.values(chosenStrategy.form).includes("player")) {
-            console.log("http://localhost:3000/playersonteam?team=" + chosenTeam)
             fetch("http://localhost:3000/playersonteam?team=" + chosenTeam)
                 .then(response => response.json())
                 .then(data => {
@@ -97,7 +94,6 @@ const Query = (props) => {
         fetch("http://localhost:3000/onload")
             .then(response => response.json())
             .then(data => {
-                console.log(data)
                 setStrategies(data["Bet Strategies"]);
                 setWageStrategies(data["Wage Strategies"]);
             });
@@ -204,9 +200,7 @@ const Query = (props) => {
                                         onChange={(event) => {
                                             setFormData((prev) => {
                                                 const newFormData = {...prev};
-                                                console.log(f);
                                                 newFormData[f] = event.target.value;
-                                                console.log(newFormData);
                                                 return newFormData;
                                             }
                                             )}}
@@ -239,8 +233,6 @@ const Query = (props) => {
                                             onChange={(event) => {
                                                 setFormData((prev) => {
                                                     const newFormData = {...prev};
-                                                    console.log(f);
-                                                    console.log(newFormData);
                                                     newFormData[f] = event.target.value;
                                                     return newFormData;
                                                 }
