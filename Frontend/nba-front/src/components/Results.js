@@ -17,6 +17,7 @@ const Results = (props) => {
     const [animationNumber, setAnimationNumber] = useState(0);
     const [finalWinnings, setFinalWinnings] = useState(0);
     const [currentState, setCurrentState] = props.currentState;
+    const [saved, setSaved] = useState(false);
 
     let inter;
 
@@ -72,6 +73,9 @@ const Results = (props) => {
                         console.log(data);
                         // window.location.href = "/login?success=true";
                     }
+
+                    setSaved(true);
+
                 }
             )
             .catch(error => {
@@ -174,7 +178,9 @@ const Results = (props) => {
                             <Link to="/newquery"><button onClick={() => setCurrentState("Team")} className={`border-black border-2 text-xl w-full rounded-l-lg hover:bg-black hover:text-green-400`}>New Query </button></Link>
                         </div>
                         <div className="mr-4 w-1/2">
-                            <button onClick={saveQuery} className={`border-black border-2 text-xl w-full rounded-r-lg hover:bg-black hover:text-green-400`}>Save Query</button>
+                            {!saved ? <button onClick={saveQuery} className={`border-black border-2 text-xl w-full rounded-r-lg hover:bg-black hover:text-green-400`}>Save Query</button> : 
+                                <button className={`border-black border-2 text-xl w-full rounded-r-lg hover:bg-black hover:text-green-400`}>Saved!</button>
+                            }
                         </div>
                     </div>
                 </div>
