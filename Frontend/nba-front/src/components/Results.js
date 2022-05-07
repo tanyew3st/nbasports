@@ -19,6 +19,8 @@ const Results = (props) => {
     const [currentState, setCurrentState] = props.currentState;
     const [saved, setSaved] = useState(false);
 
+    const { REACT_APP_BACKEND_URL } = process.env;
+
     let inter;
 
     const saveQuery = () => {
@@ -61,7 +63,7 @@ const Results = (props) => {
             body: JSON.stringify(postObj)
         };
 
-        fetch('http://localhost:3000/savequery', requestOptions)
+        fetch(`${REACT_APP_BACKEND_URL}/savequery`, requestOptions)
             .then(response => response.json())
             .then(data => 
                 {
@@ -119,7 +121,7 @@ const Results = (props) => {
     const keys = ["Index", "Game ID", "Date", "Home", "Home Odds", "Away", "Away Odds", "Win", "Team Bet On", "Wager", "Winnings", "Total Winnings"]
     
     useEffect(() => {
-        fetch("http://localhost:3000/" + query)
+        fetch(REACT_APP_BACKEND_URL + "/" + query)
             .then(results => results.json())
             .then(data => {
                 const money = [];
@@ -128,7 +130,7 @@ const Results = (props) => {
 
                 if (!data.results || data.results.length === 0) {
                     alert("No Games Returned!");
-                    window.location.href = "http://localhost:8000/newquery";
+                    window.location.href = "/newquery";
                     return;
                 }
 

@@ -71,6 +71,8 @@ const Sidebar = (props) => {
             setLoggedIn("");
             localStorage.removeItem("username");
         }
+
+        window.location.href = "/login"
     }
 
     return <Fragment> 

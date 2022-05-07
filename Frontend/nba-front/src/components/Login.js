@@ -2,7 +2,6 @@ import { faUser, faDoorOpen, faLock } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState, useEffect, Fragment } from 'react'
 import { Link } from 'react-router-dom'
-import queryString from 'query-string';
 
 const Login = (props) => {
 
@@ -12,6 +11,8 @@ const Login = (props) => {
     const [incorrect, setIncorrect] = useState(false);
     const [error, setError] = useState("");
     const [currentState, setCurrentState] = props.currentState;
+
+    const { REACT_APP_BACKEND_URL} = process.env;
 
     useEffect(() => {
         setSignupValid(() => {return window.location.href.includes("success=true") ? true : false})
@@ -30,13 +31,13 @@ const Login = (props) => {
             body: JSON.stringify(reqBody)
         };
 
-        fetch('http://localhost:3000/login', requestOptions)
+        fetch(`${REACT_APP_BACKEND_URL}/login`, requestOptions)
             .then(response => response.json())
             .then(data => 
                 {
                     if (Object.keys(data).includes("username")) {
                         localStorage.setItem('username', data["username"]);
-                        window.location.href = 'http://localhost:8000/newquery'
+                        window.location.href = '/newquery'
                     } else {
                         setError(data["error"]);
                     }

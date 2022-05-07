@@ -13,6 +13,8 @@ const Signup = (props) => {
     const [incorrect, setIncorrect] = useState("");
     const [currentState, setCurrentState] = props.currentState;
 
+    const { REACT_APP_BACKEND_URL} = process.env;
+
     const submitInfo = () => {
         const reqBody = {
             "username": username,
@@ -30,7 +32,7 @@ const Signup = (props) => {
             body: JSON.stringify(reqBody)
         };
 
-        fetch('http://localhost:3000/adduser', requestOptions)
+        fetch(`${REACT_APP_BACKEND_URL}/adduser`, requestOptions)
             .then(response => response.json())
             .then(data => 
                 {

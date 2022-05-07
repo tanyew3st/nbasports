@@ -9,9 +9,13 @@ const SavedQueries = () => {
 
     const [selectedQuery, setSelectedQuery] = useState(-1);
 
+    const { REACT_APP_BACKEND_URL } = process.env;
+
+    console.log(process.env);
+
     useEffect(() => {
         if (!localStorage.getItem('username')) {
-            alert("You must Login!");
+            // alert("You must Login!");
             window.location.href = "/login";
             return;
         }
@@ -24,8 +28,9 @@ const SavedQueries = () => {
 
         const strats = {};
         const wageStrats = {};
+        console.log(`${REACT_APP_BACKEND_URL}/onload`);
 
-        fetch('http://localhost:3000/onload')
+        fetch(`${REACT_APP_BACKEND_URL}/onload`)
             .then(response => response.json())
             .then(data => 
                 {   
@@ -50,7 +55,7 @@ const SavedQueries = () => {
                 alert(error);
             })
 
-        fetch('http://localhost:3000/getqueries', requestOptions)
+        fetch(`${REACT_APP_BACKEND_URL}/getqueries`, requestOptions)
             .then(response => response.json())
             .then(data => 
                 {   
@@ -88,7 +93,7 @@ const SavedQueries = () => {
             <div className="w-1/2 h-full p-6 pr-3 pl-12">
                 <div className="w-full h-full border-black border-4 rounded-3xl divide-y divide-black">
                     <div>
-                        <p className="text-black text-center font-bold p-2 text-3xl">Query <button onClick={() => {window.location.href = `http://localhost:8000/query/${queries[selectedQuery]["Query"]}`}} className="content-center"><FontAwesomeIcon icon={ faArrowRight }></FontAwesomeIcon></button></p>   
+                        <p className="text-black text-center font-bold p-2 text-3xl">Query <button onClick={() => {window.location.href = `/query/${queries[selectedQuery]["Query"]}`}} className="content-center"><FontAwesomeIcon icon={ faArrowRight }></FontAwesomeIcon></button></p>   
                     </div>
                     {selectedQuery === -1 ? <Fragment>
                         <p className="p-2 text-center font-bold text-lg">Select a Query!</p>

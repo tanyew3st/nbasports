@@ -19,6 +19,8 @@ const Query = (props) => {
 
     const [formData, setFormData] = useState({})
 
+    const { REACT_APP_BACKEND_URL } = process.env;
+
     const params = {
         "Team": {
             "title": "Team",
@@ -70,7 +72,7 @@ const Query = (props) => {
         // also want to initialize the formData object
 
         if (Object.values(chosenStrategy.form).includes("player")) {
-            fetch("http://localhost:3000/playersonteam?team=" + chosenTeam)
+            fetch(`${REACT_APP_BACKEND_URL}/playersonteam?team=` + chosenTeam)
                 .then(response => response.json())
                 .then(data => {
                     setPlayers(data.results);
@@ -86,12 +88,12 @@ const Query = (props) => {
     }
     
     useEffect(() => {
-        fetch("http://localhost:3000/teamnames")
+        fetch(`${REACT_APP_BACKEND_URL}/teamnames`)
             .then(response => response.json())
             .then(data => {
                 setTeams(data.results);
             });
-        fetch("http://localhost:3000/onload")
+        fetch(`${REACT_APP_BACKEND_URL}/onload`)
             .then(response => response.json())
             .then(data => {
                 setStrategies(data["Bet Strategies"]);
