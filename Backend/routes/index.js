@@ -707,11 +707,11 @@ router.get('/winstreak', function(req, res) {
           throw err;
       }
       connection.query(`WITH RenameHome AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
     ), RenameAway AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
     ), JoinHomeAway AS (
