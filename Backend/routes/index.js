@@ -46,13 +46,14 @@ router.get('/favored', function(req, res) {
         throw err;
     }
      connection.query(`WITH OddsWin AS (
-      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
-        FROM Odds O, Teams T
-      WHERE T.TeamId = O.TeamId
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
+        FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
+          WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
       ), GameOdds AS (
-         SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.ML AS HomeOdds, AOdds.ML AS AwayOdds, HOdds.Result AS HomeResult
-         FROM OddsWin HOdds, Games G, OddsWin AOdds
-         WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
+         SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam,
+                HOdds.BetOnlineML AS HomeOdds, AOdds.BetOnlineML AS AwayOdds, HOdds.Result AS HomeResult
+         FROM Games G JOIN OddsWin HOdds ON (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID)
+              JOIN OddsWin AOdds ON (AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
       ), GameOddsWithFavored AS (
          (SELECT *, HomeTeam AS FavoredTeam
          FROM GameOdds
@@ -64,11 +65,11 @@ router.get('/favored', function(req, res) {
       ), FavoredWins AS (
          SELECT GameId, GameDate AS Date, HomeTeam AS Home, AwayTeam AS Away, FavoredTeam AS Bet, HomeOdds, AwayOdds, 'W' AS Win
          FROM GameOddsWithFavored
-         WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
+         WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0)) AND (FavoredTeam = '${team}')
       ), FavoredLosses AS (
          SELECT GameId, GameDate AS Date, HomeTeam AS Home, AwayTeam AS Away, FavoredTeam AS Bet, HomeOdds, AwayOdds, 'L' AS Win
          FROM GameOddsWithFavored
-         WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
+         WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0)) AND (FavoredTeam = '${team}')
       ), UnionBoth AS (
          SELECT *
          FROM FavoredLosses
@@ -78,11 +79,8 @@ router.get('/favored', function(req, res) {
       )
       SELECT *
       FROM UnionBoth
-      WHERE Date >= '${startDate}' AND Date <= '${finalDate}' AND Bet='${team}'
       ORDER BY Date;
-      
-      
-      
+
    
      `, function(error, results, fields) {
        if (error) {
@@ -120,13 +118,13 @@ router.get('/unfavored', function(req, res) {
         throw err;
     }
      connection.query(`WITH OddsWin AS (
-      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
-      FROM Odds O, Teams T
-      WHERE T.TeamId = O.TeamId
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
+      FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
+      WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
   ), GameOdds AS (
-     SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.ML AS HomeOdds, AOdds.ML AS AwayOdds, HOdds.Result AS HomeResult
-     FROM OddsWin HOdds, Games G, OddsWin AOdds
-     WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
+     SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BetOnlineML AS HomeOdds, AOdds.BetOnlineML AS AwayOdds, HOdds.Result AS HomeResult
+     FROM Games G JOIN OddsWin HOdds ON (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID) JOIN
+         OddsWin AOdds ON (AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
   ), GameOddsWithFavored AS (
      (SELECT *, AwayTeam AS UnfavoredTeam
      FROM GameOdds
@@ -138,11 +136,11 @@ router.get('/unfavored', function(req, res) {
   ), UnfavoredWins AS (
      SELECT GameId, GameDate AS Date, HomeTeam AS Home, AwayTeam AS Away, UnfavoredTeam AS Bet, HomeOdds, AwayOdds, 'L' AS Win
      FROM GameOddsWithFavored
-     WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
+     WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0)) AND UnfavoredTeam = '${team}'
   ), UnfavoredLosses AS (
      SELECT GameId, GameDate AS Date, HomeTeam AS Home, AwayTeam AS Away, UnfavoredTeam AS Bet, HomeOdds, AwayOdds, 'W' as Win
      FROM GameOddsWithFavored
-     WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
+     WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0)) AND UnfavoredTeam = '${team}'
   ), UnionBoth AS (
      SELECT *
      FROM UnfavoredLosses
@@ -152,10 +150,7 @@ router.get('/unfavored', function(req, res) {
   )
   SELECT *
   FROM UnionBoth
-  WHERE Date >= '${startDate}' AND Date <= '${finalDate}' AND Bet ='${team}'
   ORDER BY Date;
-  
-      
       
      `, function(error, results, fields) {
        if (error) {
@@ -199,40 +194,35 @@ router.get('/ifbetplayer', function(req, res) {
         connection.release();
         throw err;
     }
-     connection.query(`WITH HomeTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.BetOnlineML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
-      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
-      WHERE O.Location = 'Home' AND GD.PlayerName = '${player}'
-      ORDER BY O.Date ASC
-     ), AwayTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.BetOnlineML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.AverageLineML AS BettedAverageLineML
-      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
-      WHERE O.Location = 'Away' AND GD.PlayerName = '${player}'
-      ORDER BY O.Date ASC
-     ), PlayerToTeam AS (
-        SELECT DISTINCT p.PLAYER_NAME AS PlayerName, o.Team AS Team
-        FROM Players p JOIN Odds o ON p.TEAM_ID = o.TeamId JOIN Teams T ON o.TeamId = T.TeamId
-        WHERE p.PLAYER_NAME = '${player}' AND T.Nickname = '${team}'
-     ), UnionHomeAway AS (
-        SELECT A.Date, A.BettedTeam, A.PTS, A.GameID, A.PlayerName, H.HomeTeam, A.AwayTeam, A.BettedResult, H.HomeOdds, A.AwayOdds
-        FROM HomeTeam H JOIN AwayTeam A ON H.GameID = A.GameID AND H.PlayerName = A.PlayerName
-        WHERE H.PlayerName = '${player}' AND EXISTS (SELECT * FROM PlayerToTeam)
-     ), NumberedRows AS (
-        SELECT ROW_NUMBER() OVER(ORDER BY O.Date) AS RowNumber, O.GameID, O.Date AS Date, '${team}' AS BettedTeam, O.PTS as PTS, O.PlayerName AS PlayerName, O.HomeTeam AS HomeTeam,
-             O.AwayTeam AS AwayTeam, O.BettedResult AS BettedResult, O.HomeOdds, O.AwayOdds
-        FROM UnionHomeAway O
-        ORDER BY O.Date
-     ), CartesianProduct AS (
-        SELECT A.GameID, A.Date, A.HomeTeam AS Home, A.AwayTeam AS Away, A.BettedTeam AS Bet, A.HomeOdds, A.AwayOdds, A.BettedResult AS Win
-        FROM NumberedRows A,  NumberedRows B
-        WHERE A.RowNumber = (B.RowNumber - 1) AND B.PTS >= '${numPoints}'
-     )
-     SELECT *
-     FROM CartesianProduct
-     WHERE Date >= '${startDate}' AND Date <= '${finalDate}';
+     connection.query(`WITH RenameHome AS (
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
+      FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+      WHERE O.Location = 'home'
+   ), RenameAway AS (
+      SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
+      FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
+      WHERE O.Location = 'away'
+   ), BetTeamToTeamID AS (
+      SELECT DISTINCT T.Nickname AS TeamName, T.TeamId AS TeamID
+      FROM Players P JOIN Teams T ON P.TEAM_ID = T.TeamId
+      WHERE T.Nickname = '${team}'
+  ), JoinHomeAway AS (
+      SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, H.Win AS Win
+      FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+      WHERE A.Date >= '${startDate}' AND A.Date <= '${finalDate}'
+  ), AddPlayers AS (
+      SELECT J.*, GD.PlayerName, GD.PTS As PointsScored
+      FROM JoinHomeAway J JOIN BetTeamToTeamID B ON ((B.TeamName = J.Home OR B.TeamName = J.Away))
+          JOIN GamesDetails GD ON (GD.TeamID = B.TeamID AND GD.GameID = J.GameID)
+      WHERE GD.PlayerName = '${player}'
+  ), WithPrevPoints AS (
+      SELECT A.GameID, A.Date, A.Home, A.Away, A.Bet, A.HomeOdds, A.AwayOdds, A.Win, A.PointsScored, LAG(A.PointsScored) OVER (ORDER BY GameID)  AS PrevPoints
+      FROM AddPlayers A
+  )
+  SELECT C.GameID, C.Date, C.Home, C.Away, C.Bet, C.HomeOdds, C.AwayOdds, C.Win
+  FROM WithPrevPoints C
+  WHERE (C.PrevPoints >= '${numPoints}');
      
-      
-   
      `, function(error, results, fields) {
        if (error) {
          console.log(error)
@@ -273,11 +263,11 @@ router.get('/ifbethome', function(req, res) {
       SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'home'
-  ), RenameAway AS (
+   ), RenameAway AS (
       SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'away'
-  ), JoinHomeAway AS (
+   ), JoinHomeAway AS (
       SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
       FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
   )
@@ -286,7 +276,7 @@ router.get('/ifbethome', function(req, res) {
   WHERE J.Home = '${team}' AND Date >='${startDate}' AND Date <= '${finalDate}'
   ORDER BY Date;
   
-    
+
    
      `, function(error, results, fields) {
        if (error) {
@@ -327,18 +317,19 @@ router.get('/ifbetaway', function(req, res) {
       SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'home'
-  ), RenameAway AS (
+   ), RenameAway AS (
       SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'away'
-  ), JoinHomeAway AS (
-      SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away,  '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home =  '${team}', H.Win, A.Win) AS Win
+   ), JoinHomeAway AS (
+      SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
       FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
   )
   SELECT *
   FROM JoinHomeAway J
-  WHERE J.Away =  '${team}' AND Date >='${startDate}' AND Date <= '${finalDate}'
+  WHERE J.Away = '${team}' AND Date >='${startDate}' AND Date <= '${finalDate}'
   ORDER BY Date;
+
   
      `, function(error, results, fields) {
        if (error) {
@@ -557,30 +548,25 @@ router.get('/zigzag', function(req, res) {
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
-    ), RenameAway AS (
+     ), RenameAway AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
-    ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, H.Win AS Win
-        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
-    ), NumberedRows AS (
-        SELECT ROW_NUMBER() OVER(ORDER BY Date) AS RowNumber, O.GameID, O.Date AS Date, O.Home, O.Away, O.HomeOdds, O.AwayOdds, O.Win
-        FROM JoinHomeAway O
-        WHERE O.Home =  '${team}'
-        ORDER BY O.Date ASC
-    ), CartesianProduct AS (
-        SELECT A.GameID, A.Date, A.Home, A.Away, A.Home AS Bet, A.HomeOdds, A.AwayOdds, A.Win
-        FROM NumberedRows A,  NumberedRows B
-        WHERE A.RowNumber = (B.RowNumber - 1) AND B.Win = "L"
-    )
-    SELECT *
-    FROM CartesianProduct
-    WHERE Date >= '${startDate}' AND Date <=  '${finalDate}'
-    ORDER BY Date;
-    
-   
-     
+     ), JoinHomeAway AS (
+         SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, H.Win AS Win
+         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+         WHERE H.Date >= '${startDate}' AND H.Date <= '${finalDate}' AND H.Home = '${team}'
+     ), NumberedRows AS (
+         SELECT ROW_NUMBER() OVER(ORDER BY Date) AS RowNumber, O.GameID, O.Date AS Date, O.Home, O.Away, O.HomeOdds, O.AwayOdds, O.Win
+         FROM JoinHomeAway O
+         ORDER BY O.Date ASC
+     ), WithPrevPoints AS (
+         SELECT A.GameID, A.Date, A.Home, A.Away, A.HomeOdds, A.AwayOdds, A.Win, LAG(A.Win) OVER (ORDER BY GameID) AS PrevWin
+         FROM NumberedRows A
+     )
+     SELECT A.GameID, A.Date, A.Home, A.Away, A.Home AS Bet, A.HomeOdds, A.AwayOdds, A.Win
+     FROM WithPrevPoints A
+     WHERE A.PrevWin = "L"; 
     
       `, function(error, results, fields) {
         if (error) {
@@ -617,17 +603,17 @@ router.get('/heavyfavorite', function(req, res) {
           throw err;
       }
       connection.query(`WITH OddsWithTeamNames AS (
-        SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
-        FROM Odds O, Teams T
-        WHERE T.TeamId = O.TeamId
+        SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
+        FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
+        WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
     ), GameOdds AS (
-        SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.ML AS HomeOdds, AOdds.ML AS AwayOdds, HOdds.Result AS HomeResult
-        FROM OddsWithTeamNames HOdds, Games G, OddsWithTeamNames AOdds
-        WHERE (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId AND AOdds.GameID = G.GameID)
+        SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BetOnlineML AS HomeOdds, AOdds.BetOnlineML AS AwayOdds, HOdds.Result AS HomeResult
+        FROM Games G JOIN OddsWithTeamNames HOdds ON (HOdds.GameID = G.GameID AND HOdds.oti = G.HomeTeamId)
+            JOIN OddsWithTeamNames AOdds ON (AOdds.GameID = G.GameID AND AOdds.oti = G.VisitorTeamId)
     ), GameOddsWithFavored AS (
        (SELECT *, HomeTeam AS HeavyFavoredTeam
        FROM GameOdds
-       WHERE (HomeOdds <='${odds}'))
+       WHERE (HomeOdds <= '${odds}'))
        UNION
        (SELECT *, AwayTeam AS HeavyFavoredTeam
        FROM GameOdds
@@ -635,11 +621,11 @@ router.get('/heavyfavorite', function(req, res) {
     ), FavoredWins AS (
        SELECT GameId, GameDate, HomeTeam, AwayTeam, HeavyFavoredTeam, HomeOdds, AwayOdds, 'W' AS BetResult
        FROM GameOddsWithFavored
-       WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0))
+       WHERE ((HomeResult = 'W' AND HomeOdds < 0) OR (HomeResult = 'L' AND AwayOdds < 0)) AND HeavyFavoredTeam = '${team}'
     ), FavoredLosses AS (
        SELECT GameId, GameDate, HomeTeam, AwayTeam, HeavyFavoredTeam, HomeOdds, AwayOdds, 'L' AS BetResult
        FROM GameOddsWithFavored
-       WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0))
+       WHERE ((HomeResult = 'W' AND HomeOdds > 0) OR (HomeResult = 'L' AND AwayOdds > 0)) AND HeavyFavoredTeam = '${team}'
     ), UnionBoth AS (
        SELECT *
        FROM FavoredLosses
@@ -649,12 +635,8 @@ router.get('/heavyfavorite', function(req, res) {
     )
     SELECT GameID, GameDate AS Date, HomeTeam AS Home, AwayTeam as Away, HeavyFavoredTeam AS Bet, HomeOdds, AwayOdds, BetResult AS Win
     FROM UnionBoth
-    WHERE GameDate >= '${startDate}' AND GameDate <= '${finalDate}' AND HeavyFavoredTeam = '${team}'
     ORDER BY GameDate;
     
-    
-   
-     
     
       `, function(error, results, fields) {
         if (error) {
@@ -694,34 +676,34 @@ router.get('/winstreak', function(req, res) {
           throw err;
       }
       connection.query(`WITH RenameHome AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
-    ), RenameAway AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+     ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
-    ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home =  '${team}',  H.Win, A.Win) AS Win
-        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
-    ), CreateCount AS (
-       SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
-              IF(o.Win = 'W', 1, 0) AS StreakCounter
-       FROM JoinHomeAway o
-       WHERE o.Home = '${team}' OR o.Away = '${team}'
-    ), AggregateStreakWins AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
-           ORDER BY c.Date
-           ROWS ${streak} PRECEDING
-           ) AS AggregateStreak
-       FROM CreateCount c
-    ), ExclusiveOfCurrRow AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'W', c.AggregateStreak - 1, c.AggregateStreak) AS PriorWinStreak
-       FROM AggregateStreakWins c
-    )
-    SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
-    FROM ExclusiveOfCurrRow c
-    WHERE c.PriorWinStreak >= '${streak}' AND Date >= '${startDate}'AND Date <= '${finalDate}';
+     ), JoinHomeAway AS (
+         SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
+         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+         WHERE H.Date >= '${startDate}' AND H.Date <= '${finalDate}'
+     ), CreateCount AS (
+        SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win, IF(o.Win = 'W', 1, 0) AS StreakCounter
+        FROM JoinHomeAway o
+        WHERE o.Home = '${team}' OR o.Away = '${team}'
+     ), AggregateStreakWins AS (
+        SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
+            ORDER BY c.Date
+            ROWS ${streak} PRECEDING
+            ) AS AggregateStreak
+        FROM CreateCount c
+     ), ExclusiveOfCurrRow AS (
+        SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'W', c.AggregateStreak - 1, c.AggregateStreak) AS PriorWinStreak
+        FROM AggregateStreakWins c
+     )
+     SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
+     FROM ExclusiveOfCurrRow c
+     WHERE c.PriorWinStreak >= ${streak};
     
       
     
@@ -761,34 +743,36 @@ router.get('/losingstreak', function(req, res) {
           throw err;
       }
       connection.query(`WITH RenameHome AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
-    ), RenameAway AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+     ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
-    ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
-        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
-    ), CreateCount AS (
-       SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
-              IF(o.Win = 'L', 1, 0) AS StreakCounter
-       FROM JoinHomeAway o
-       WHERE o.Home = '${team}' OR o.Away = '${team}'
-    ), AggregateStreakLose AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
-           ORDER BY c.Date
-           ROWS ${streak} PRECEDING
-           ) AS AggregateStreak
-       FROM CreateCount c
-    ), ExclusiveOfCurrRow AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'L', c.AggregateStreak - 1, c.AggregateStreak) AS PriorLoseStreak
-       FROM AggregateStreakLose c
-    )
-    SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
-    FROM ExclusiveOfCurrRow c
-    WHERE c.PriorLoseStreak >= '${streak}' AND Date >= '${startDate}' AND Date <= '${finalDate}';
+     ), JoinHomeAway AS (
+         SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
+         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+         WHERE H.Date >= '${startDate}' AND H.Date <= '${finalDate}'
+     ), CreateCount AS (
+        SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
+               IF(o.Win = 'L', 1, 0) AS StreakCounter
+        FROM JoinHomeAway o
+        WHERE o.Home = '${team}' OR o.Away = '${team}'
+     ), AggregateStreakLose AS (
+        SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
+            ORDER BY c.Date
+            ROWS ${streak} PRECEDING
+            ) AS AggregateStreak
+        FROM CreateCount c
+     ), ExclusiveOfCurrRow AS (
+        SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'L', c.AggregateStreak - 1, c.AggregateStreak) AS PriorLoseStreak
+        FROM AggregateStreakLose c
+     )
+     SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
+     FROM ExclusiveOfCurrRow c
+     WHERE c.PriorLoseStreak >= ${streak};
+      
     
       
     
@@ -830,18 +814,18 @@ router.get('/likedteam', function(req, res) {
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
-    ), RenameAway AS (
+     ), RenameAway AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
-    ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
-        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
-    )
-    SELECT * FROM JoinHomeAway J
-    WHERE (J.Home = '${team}' OR J.Away = '${team}') AND J.Date <= '${finalDate}' AND J.Date >= '${startDate}';
-    
-      
+     ), JoinHomeAway AS (
+         SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
+         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+         WHERE H.Date >= '${startDate}' AND H.Date <= '${finalDate}'
+     )
+     SELECT * FROM JoinHomeAway J
+     WHERE (J.Home = '${team}' OR J.Away = '${team}');
+
     
       `, function(error, results, fields) {
         if (error) {
