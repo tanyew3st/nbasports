@@ -118,7 +118,7 @@ const Results = (props) => {
         ]
     }
 
-    const keys = ["Index", "Game ID", "Date", "Home", "Home Odds", "Away", "Away Odds", "Win", "Team Bet On", "Wager", "Winnings", "Total Winnings"]
+    const keys = ["Index", "Date", "Home", "Home Odds", "Away", "Away Odds", "Win", "Team Bet On", "Wager", "Winnings", "Total Winnings"]
     
     useEffect(() => {
         fetch(REACT_APP_BACKEND_URL + "/" + query)
@@ -200,7 +200,7 @@ const Results = (props) => {
                             <Fragment>{(result["Win"] === "W" && !hideWins || result["Win"] === "L" && !hideLosses) ? (
                             <tr className={`overflow-y-scroll border-black border-2 ${result["Win"] === "W" ? "bg-green-100" : "bg-white"}`}>
                                 <td className="border-black border-2 p-2 text-center">{i + 1}</td>
-                                <td className="border-black border-2 p-2 text-center">{result["GameID"]}</td>
+                                {/* <td className="border-black border-2 p-2 text-center">{result["GameID"]}</td> */}
                                 <td className="border-black border-2 p-2 text-center">{result["Date"]}</td>
                                 <td className="border-black border-2 p-2 text-center">{result["Home"]}</td>
                                 <td className="border-black border-2 p-2 text-center">{result["HomeOdds"]}</td>
