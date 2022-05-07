@@ -707,34 +707,34 @@ router.get('/winstreak', function(req, res) {
           throw err;
       }
       connection.query(`WITH RenameHome AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
-    ), RenameAway AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+     ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
-    ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home =  '${team}',  H.Win, A.Win) AS Win
-        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
-    ), CreateCount AS (
-       SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
-              IF(o.Win = 'W', 1, 0) AS StreakCounter
-       FROM JoinHomeAway o
-       WHERE o.Home = '${team}' OR o.Away = '${team}'
-    ), AggregateStreakWins AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
-           ORDER BY c.Date
-           ROWS ${streak} PRECEDING
-           ) AS AggregateStreak
-       FROM CreateCount c
-    ), ExclusiveOfCurrRow AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'W', c.AggregateStreak - 1, c.AggregateStreak) AS PriorWinStreak
-       FROM AggregateStreakWins c
-    )
-    SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
-    FROM ExclusiveOfCurrRow c
-    WHERE c.PriorWinStreak >= '${streak}' AND Date >= '${startDate}'AND Date <= '${finalDate}';
+     ), JoinHomeAway AS (
+         SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}'  AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}' , H.Win, A.Win) AS Win
+         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+         WHERE H.Date >= '${startDate}' AND H.Date <= '${finalDate}'
+     ), CreateCount AS (
+        SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win, IF(o.Win = 'W', 1, 0) AS StreakCounter
+        FROM JoinHomeAway o
+        WHERE o.Home = '${team}'  OR o.Away = '${team}' 
+     ), AggregateStreakWins AS (
+        SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
+            ORDER BY c.Date
+            ROWS ${streak} PRECEDING
+            ) AS AggregateStreak
+        FROM CreateCount c
+     ), ExclusiveOfCurrRow AS (
+        SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'W', c.AggregateStreak - 1, c.AggregateStreak) AS PriorWinStreak
+        FROM AggregateStreakWins c
+     )
+     SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
+     FROM ExclusiveOfCurrRow c
+     WHERE c.PriorWinStreak >= ${streak};
     
       
     
@@ -774,34 +774,35 @@ router.get('/losingstreak', function(req, res) {
           throw err;
       }
       connection.query(`WITH RenameHome AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BestLineML AS HomeOdds, O.Result AS Win
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
-    ), RenameAway AS (
-        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BestLineML AS AwayOdds, O.Result AS Win
+     ), RenameAway AS (
+        SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
-    ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
-        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
-    ), CreateCount AS (
-       SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
-              IF(o.Win = 'L', 1, 0) AS StreakCounter
-       FROM JoinHomeAway o
-       WHERE o.Home = '${team}' OR o.Away = '${team}'
-    ), AggregateStreakLose AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
-           ORDER BY c.Date
-           ROWS ${streak} PRECEDING
-           ) AS AggregateStreak
-       FROM CreateCount c
-    ), ExclusiveOfCurrRow AS (
-       SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'L', c.AggregateStreak - 1, c.AggregateStreak) AS PriorLoseStreak
-       FROM AggregateStreakLose c
-    )
-    SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
-    FROM ExclusiveOfCurrRow c
-    WHERE c.PriorLoseStreak >= '${streak}' AND Date >= '${startDate}' AND Date <= '${finalDate}';
+     ), JoinHomeAway AS (
+         SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, IF(H.Home = '${team}', H.Win, A.Win) AS Win
+         FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+         WHERE H.Date >= '${startDate}' AND H.Date <= '${finalDate}'
+     ), CreateCount AS (
+        SELECT o.GameID, o.Date, o.Home, o.Away, o.Bet, o.HomeOdds, o.AwayOdds, o.Win,
+               IF(o.Win = 'L', 1, 0) AS StreakCounter
+        FROM JoinHomeAway o
+        WHERE o.Home = '${team}' OR o.Away = '${team}'
+     ), AggregateStreakLose AS (
+        SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, SUM(StreakCounter) OVER (
+            ORDER BY c.Date
+            ROWS ${streak} PRECEDING
+            ) AS AggregateStreak
+        FROM CreateCount c
+     ), ExclusiveOfCurrRow AS (
+        SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win, IF(c.Win = 'L', c.AggregateStreak - 1, c.AggregateStreak) AS PriorLoseStreak
+        FROM AggregateStreakLose c
+     )
+     SELECT c.GameID, c.Date, c.Home, c.Away, c.Bet, c.HomeOdds, c.AwayOdds, c.Win
+     FROM ExclusiveOfCurrRow c
+     WHERE c.PriorLoseStreak >= ${streak};
     
       
     
