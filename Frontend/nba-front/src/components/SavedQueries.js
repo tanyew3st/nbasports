@@ -84,7 +84,7 @@ const SavedQueries = () => {
                 }
             )
             .catch(error => {
-                alert(error);
+                console.log("nothing saved");
             })
     }, []);
     return <Fragment>

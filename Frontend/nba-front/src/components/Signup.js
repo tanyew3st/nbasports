@@ -24,8 +24,6 @@ const Signup = (props) => {
             "emailaddress": email
         }
 
-        console.log(JSON.stringify(reqBody));
-
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
