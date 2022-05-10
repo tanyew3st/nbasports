@@ -47,17 +47,10 @@ router.get('/favored', function (req, res) {
       connection.release();
       throw err;
     }
-<<<<<<< Updated upstream
      connection.query(`WITH OddsWin AS (
       SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
           WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
-=======
-    connection.query(`WITH OddsWin AS (
-      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
-        FROM Odds O, Teams T
-      WHERE T.TeamId = O.TeamId
->>>>>>> Stashed changes
       ), GameOdds AS (
          SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam,
                 HOdds.BetOnlineML AS HomeOdds, AOdds.BetOnlineML AS AwayOdds, HOdds.Result AS HomeResult
@@ -124,17 +117,10 @@ router.get('/unfavored', function (req, res) {
       connection.release();
       throw err;
     }
-<<<<<<< Updated upstream
      connection.query(`WITH OddsWin AS (
       SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
       FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
       WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
-=======
-    connection.query(`WITH OddsWin AS (
-      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
-      FROM Odds O, Teams T
-      WHERE T.TeamId = O.TeamId
->>>>>>> Stashed changes
   ), GameOdds AS (
      SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BetOnlineML AS HomeOdds, AOdds.BetOnlineML AS AwayOdds, HOdds.Result AS HomeResult
      FROM Games G JOIN OddsWin HOdds ON (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID) JOIN
@@ -207,7 +193,6 @@ router.get('/ifbetplayer', function (req, res) {
       connection.release();
       throw err;
     }
-<<<<<<< Updated upstream
      connection.query(`WITH RenameHome AS (
       SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
@@ -236,41 +221,6 @@ router.get('/ifbetplayer', function (req, res) {
    SELECT C.GameID, C.Date, C.Home, C.Away, C.Bet, C.HomeOdds, C.AwayOdds, C.Win
    FROM WithPrevPoints C
    WHERE (C.PrevPoints >= '${numPoints}');
-=======
-    connection.query(`WITH HomeTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.BetOnlineML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.BetonlineML AS BettedAverageLineML
-      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
-      WHERE O.Location = 'Home' AND GD.PlayerName = '${player}'
-      ORDER BY O.Date ASC
-     ), AwayTeam AS (
-      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.BetOnlineML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.BetOnlineML AS BettedAverageLineML
-      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
-      WHERE O.Location = 'Away' AND GD.PlayerName = '${player}'
-      ORDER BY O.Date ASC
-     ), PlayerToTeam AS (
-        SELECT DISTINCT p.PLAYER_NAME AS PlayerName, o.Team AS Team
-        FROM Players p JOIN Odds o ON p.TEAM_ID = o.TeamId JOIN Teams T ON o.TeamId = T.TeamId
-        WHERE p.PLAYER_NAME = '${player}' AND T.Nickname = '${team}'
-     ), UnionHomeAway AS (
-        SELECT A.Date, A.BettedTeam, A.PTS, A.GameID, A.PlayerName, H.HomeTeam, A.AwayTeam, A.BettedResult, H.HomeOdds, A.AwayOdds
-        FROM HomeTeam H JOIN AwayTeam A ON H.GameID = A.GameID AND H.PlayerName = A.PlayerName
-        WHERE H.PlayerName = '${player}' AND EXISTS (SELECT * FROM PlayerToTeam)
-     ), NumberedRows AS (
-        SELECT ROW_NUMBER() OVER(ORDER BY O.Date) AS RowNumber, O.GameID, O.Date AS Date, '${team}' AS BettedTeam, O.PTS as PTS, O.PlayerName AS PlayerName, O.HomeTeam AS HomeTeam,
-             O.AwayTeam AS AwayTeam, O.BettedResult AS BettedResult, O.HomeOdds, O.AwayOdds
-        FROM UnionHomeAway O
-        ORDER BY O.Date
-     ), CartesianProduct AS (
-        SELECT A.GameID, A.Date, A.HomeTeam AS Home, A.AwayTeam AS Away, A.BettedTeam AS Bet, A.HomeOdds, A.AwayOdds, A.BettedResult AS Win
-        FROM NumberedRows A,  NumberedRows B
-        WHERE A.RowNumber = (B.RowNumber - 1) AND B.PTS >= '${numPoints}'
-     )
-     SELECT *
-     FROM CartesianProduct
-     WHERE Date >= '${startDate}' AND Date <= '${finalDate}';
-     
-      
->>>>>>> Stashed changes
    
      `, function (error, results, fields) {
       if (error) {
@@ -631,7 +581,6 @@ router.get('/zigzag', function (req, res) {
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
-<<<<<<< Updated upstream
      ), JoinHomeAway AS (
          SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, H.Win AS Win
          FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
@@ -660,43 +609,10 @@ router.get('/zigzag', function (req, res) {
         connection.release();
       });
   
-=======
-    ), JoinHomeAway AS (
-        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, H.Win AS Win
-        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
-    ), NumberedRows AS (
-        SELECT ROW_NUMBER() OVER(ORDER BY Date) AS RowNumber, O.GameID, O.Date AS Date, O.Home, O.Away, O.HomeOdds, O.AwayOdds, O.Win
-        FROM JoinHomeAway O
-        WHERE O.Home =  '${team}'
-        ORDER BY O.Date ASC
-    ), CartesianProduct AS (
-        SELECT A.GameID, A.Date, A.Home, A.Away, A.Home AS Bet, A.HomeOdds, A.AwayOdds, A.Win
-        FROM NumberedRows A,  NumberedRows B
-        WHERE A.RowNumber = (B.RowNumber - 1) AND B.Win = "L"
-    )
-    SELECT *
-    FROM CartesianProduct
-    WHERE Date >= '${startDate}' AND Date <=  '${finalDate}'
-    ORDER BY Date;
-    
-   
-     
-    
-      `, function (error, results, fields) {
-      if (error) {
-        console.log(error)
-        res.json({ error: error })
-      }
-      else if (results) {
-        results = addingWage(results, betType, wager)
-        res.json({ results: results })
-      }
-      connection.release();
->>>>>>> Stashed changes
     });
 
   });
-});
+
 
 /* Route #11: GETS the data for various betting strategies, when the user bets on a team given that the team is a heavy favorite, specified by the odds  */
 /* Request Path: “/heavyfavorite*/
@@ -707,7 +623,6 @@ router.get('/heavyfavorite', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
   const odds = req.query.Odds ? req.query.Odds : -300
-<<<<<<< Updated upstream
   const team = req.query.team ? req.query.team: 'Warriors'
   const startDate = req.query.start? req.query.start: "2012-10-30"
    const finalDate = req.query.end? req.query.end : "2019-04-10"
@@ -722,21 +637,6 @@ router.get('/heavyfavorite', function (req, res) {
         SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
         WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
-=======
-  const team = req.query.team ? req.query.team : 'Warriors'
-  const startDate = req.query.start ? req.query.start : "2012-10-30"
-  const finalDate = req.query.end ? req.query.end : "2019-04-10"
-  console.log(wager)
-  connectionPool.getConnection(function (err, connection) {
-    if (err) {
-      connection.release();
-      throw err;
-    }
-    connection.query(`WITH OddsWithTeamNames AS (
-        SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
-        FROM Odds O, Teams T
-        WHERE T.TeamId = O.TeamId
->>>>>>> Stashed changes
     ), GameOdds AS (
         SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BetOnlineML AS HomeOdds, AOdds.BetOnlineML AS AwayOdds, HOdds.Result AS HomeResult
         FROM Games G JOIN OddsWithTeamNames HOdds ON (HOdds.GameID = G.GameID AND HOdds.oti = G.HomeTeamId)
