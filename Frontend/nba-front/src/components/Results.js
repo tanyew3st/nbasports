@@ -70,7 +70,6 @@ const Results = (props) => {
                     if (Object.keys(data).includes('error')) {
                         alert("There was an error");
                     } else {
-                        // window.location.href = "/login?success=true";
                     }
 
                     setSaved(true);
@@ -106,11 +105,9 @@ const Results = (props) => {
             label: "Total Winnings",
             data: money,
             fill: true,
-            // backgroundColor: "rgb(74 222 128)",
             borderColor: "black",
             pointBackgroundColor: function(context) {
                 var index = context.dataIndex;
-                // var value = context.dataset.data[index];
                 return results[index]["Win"] === "W" ? 'rgb(74 222 128)' : 'rgb(0,0,0)'
             },
             pointClass: "animate-pulse",
