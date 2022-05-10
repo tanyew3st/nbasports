@@ -47,7 +47,7 @@ router.get('/favored', function (req, res) {
       connection.release();
       throw err;
     }
-     connection.query(`WITH OddsWin AS (
+    connection.query(`WITH OddsWin AS (
       SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
           WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
@@ -117,7 +117,7 @@ router.get('/unfavored', function (req, res) {
       connection.release();
       throw err;
     }
-     connection.query(`WITH OddsWin AS (
+    connection.query(`WITH OddsWin AS (
       SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
       FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
       WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
@@ -193,7 +193,7 @@ router.get('/ifbetplayer', function (req, res) {
       connection.release();
       throw err;
     }
-     connection.query(`WITH RenameHome AS (
+    connection.query(`WITH RenameHome AS (
       SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'home'
@@ -433,7 +433,8 @@ router.get('/onload', function (req, res) {
       },
       {
         "name": "Zigzag Bet",
-        "description": " Gets the data for various betting strategies, when the user bets on the home team winning after a loss over an interval",
+        "description": " Gets the data for various betting strategies, when the user bets on the home team winning after a loss over an interval. The zig zag theory works when a team is at home AND coming off a loss. This brings the odds up to 53%, which is enough to become profitable"
+        ,
         "route": "zigzag",
         "form":
         {
@@ -441,7 +442,8 @@ router.get('/onload', function (req, res) {
       },
       {
         "name": "Heavy Favorite Bet",
-        "description": " Gets the data for various betting strategies, when the user bets on the heavy favored team over an interval",
+        "description": " Gets the data for various betting strategies, when the user bets on the heavy favored team over an interval. Favorites win more often than not. That’s obvious. Heavy favorites win even more frequently, and that’s essentially what this strategy is based on. The idea is to back selections at very low odds, for the simple reason that they’re very likely to win."
+        ,
         "route": "heavyfavorite",
         "form":
         {
@@ -476,7 +478,8 @@ router.get('/onload', function (req, res) {
       },
       {
         "name": "Home Recovery Bet",
-        "description": " Gets the data for various betting strategies, when the user bets on a team that had a poor shooting performance in their previous game and are now at home over an interval",
+        "description": " Gets the data for various betting strategies, when the user bets on a team that had a poor shooting performance in their previous game and are now at home over an interval. We’re looking for a team that’s playing at home who had a lousy offensive performance in the previous game. Look for teams with winning records who shot a much lower FG% than their average or scored fewer points than their typical points per game. Teams that fit this description have exceeded their expected point total and won against the spread 62% of the time."
+        ,
         "route": "homerecovery",
         "form":
         {
@@ -484,7 +487,7 @@ router.get('/onload', function (req, res) {
       },
       {
         "name": "Road Recovery Bet",
-        "description": " Gets the data for various betting strategies, when the user bets on a road team that had a crushing loss and their previous game and are now favored on the road over an interval",
+        "description": " Gets the data for various betting strategies, when the user bets on a road team that had a crushing loss and their previous game and are now favored on the road over an interval. You’ll need a team that’s favored to win despite playing on the road and who just suffered an embarrassing defeat. NBA teams that were just blown out by fifteen points or more tend to take out their frustrations on their next opponent, especially if it’s an underdog! When a team lost their previous game by fifteen or more and traveled to an underdog’s stadium for their next game, the road favorite has won roughly 64% of the time. At that winning percentage, you’ll need a team favored by less than -178 to find value.",
         "route": "roadrecovery",
         "form":
         {
@@ -597,21 +600,21 @@ router.get('/zigzag', function (req, res) {
      FROM WithPrevPoints A
      WHERE A.PrevWin = "L";
 
-      `, function(error, results, fields) {
-        if (error) {
-          console.log(error)
-          res.json({error: error})
-        }
-        else if (results) {
-          results = addingWage(results, betType, wager)
-          res.json({results: results})
-        }
-        connection.release();
-      });
-  
+      `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+      }
+      connection.release();
     });
 
   });
+
+});
 
 
 /* Route #11: GETS the data for various betting strategies, when the user bets on a team given that the team is a heavy favorite, specified by the odds  */
@@ -623,17 +626,16 @@ router.get('/heavyfavorite', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
   const odds = req.query.Odds ? req.query.Odds : -300
-  const team = req.query.team ? req.query.team: 'Warriors'
-  const startDate = req.query.start? req.query.start: "2012-10-30"
-   const finalDate = req.query.end? req.query.end : "2019-04-10"
-    console.log(wager)
-    connectionPool.getConnection(function(err, connection) { 
-      if (err)
-      {
-          connection.release();
-          throw err;
-      }
-      connection.query(`WITH OddsWithTeamNames AS (
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
+    }
+    connection.query(`WITH OddsWithTeamNames AS (
         SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
         WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
