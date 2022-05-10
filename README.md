@@ -5,3 +5,11 @@ Description / Motivation: Everyone loves supporting their favorite team and winn
 Directories: 
 * Frontend: files involving the frontend of our application
 * Backend: files involving the backend of the application
+
+# How to Run
+
+On the backend - cd into the backend folder. Run npm install. This will install all the node packages. Then, to serve the backend, type in the command node app.js. 
+
+On the frontend - cd into Frontend/nba-front. Run npm install. This will install all the node packages. Then, to serve the front end, type in npm run start.
+
+Now to see the app in action, navigate to http://localhost:8000
