@@ -5,50 +5,59 @@ const mysql = require('mysql');
 var CryptoJS = require("crypto-js");
 
 const cors = require('cors');
- 
+
+var playerCacheCount = 0 //caching fields for teamnames
+var finalJSON;
+
 const connectionPool = mysql.createPool({
- connectionLimit: "100",
- host:"lit-database.crejo6jmuckg.us-east-1.rds.amazonaws.com",
- user:"admin",
- password:"password",
- port:"3306",
- database:"Odds"
+  connectionLimit: "100",
+  host: "lit-database.crejo6jmuckg.us-east-1.rds.amazonaws.com",
+  user: "admin",
+  password: "password",
+  port: "3306",
+  database: "Odds"
 });
 
- 
-/* Route #1: GET home page. */
+
+/* Route #1: GETS the home page. */
 /* Request Path: “/” */
 /* Request Parameters: N/A */
 /* Query Parameters: N/A */
 /* Response Parameters: title to display on the home page */
-router.get('/', function(req, res, next) {
- res.render('index', { title: 'NBA Betting' });
+router.get('/', function (req, res, next) {
+  res.render('index', { title: 'NBA Betting' });
 });
 
- 
+
 /* Route #2: GETS the data for various betting strategies, when the user bets on the favored team winning over an interval   */
-/* Request Path: “/favored?betType=&wager=&team=*/
+/* Request Path: “/favored*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager */
-/* Query Parameters: Team and Dates*/
+/* Query Parameters: Team, startDate, finalDate*/
 /* Response Parameters: the results, which is the expected profit from this kind of bet on the favorite team each time for various wagers and betting strategies, along with the relevant game data */
- 
-router.get('/favored', function(req, res) {
- const betType = req.query.betType ? req.query.betType : "Constant"
- const wager = req.query.wager ? req.query.wager : 100
- const team = req.query.team? req.query.team : "Warriors"
- const startDate = req.query.start? req.query.start: "2012-10-30"
- const finalDate = req.query.end? req.query.end : "2019-04-10"
+
+router.get('/favored', function (req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team : "Warriors"
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
   console.log(wager)
-  connectionPool.getConnection(function(err, connection) { 
-    if (err)
-    {
-        connection.release();
-        throw err;
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
     }
+<<<<<<< Updated upstream
      connection.query(`WITH OddsWin AS (
       SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
           WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
+=======
+    connection.query(`WITH OddsWin AS (
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
+        FROM Odds O, Teams T
+      WHERE T.TeamId = O.TeamId
+>>>>>>> Stashed changes
       ), GameOdds AS (
          SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam,
                 HOdds.BetOnlineML AS HomeOdds, AOdds.BetOnlineML AS AwayOdds, HOdds.Result AS HomeResult
@@ -81,45 +90,51 @@ router.get('/favored', function(req, res) {
       FROM UnionBoth
       ORDER BY Date;
    
-     `, function(error, results, fields) {
-       if (error) {
-         console.log(error)
-         res.json({error: error})
-       }
-       else if (results) {
-       
-         results = addingWage(results, betType, wager);
- 
-         res.json({results: results})
-         
-       }
-       connection.release();
-     });
+     `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+
+        results = addingWage(results, betType, wager);
+
+        res.json({ results: results })
+
+      }
+      connection.release();
     });
- 
+  });
+
 });
 /* Route #3: GETS the data for various betting strategies, when the user bets on the underdog team winning over an interval   */
-/* Request Path: “/unfavored?betType=&wager=*/
-/* Request Parameters: betType and wager, which denotes the betting strategy and the */
-/* Query Parameters: N/A */
+/* Request Path: “/unfavored/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
+/* Query Parameters:  Team, startDate, finalDate */
 /* Response Parameters: the results, which is the expected profit from this kind of bet on the underdog team each time for various wagers and betting strategies, along with the relevant game data */
-router.get('/unfavored', function(req, res) {
+router.get('/unfavored', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
-  const team = req.query.team? req.query.team : "Warriors"
-  const startDate = req.query.start? req.query.start: "2012-10-30"
-  const finalDate = req.query.end? req.query.end : "2019-04-10"
+  const team = req.query.team ? req.query.team : "Warriors"
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
   console.log(wager)
-  connectionPool.getConnection(function(err, connection) { 
-    if (err)
-    {
-        connection.release();
-        throw err;
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
     }
+<<<<<<< Updated upstream
      connection.query(`WITH OddsWin AS (
       SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
       FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
       WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
+=======
+    connection.query(`WITH OddsWin AS (
+      SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
+      FROM Odds O, Teams T
+      WHERE T.TeamId = O.TeamId
+>>>>>>> Stashed changes
   ), GameOdds AS (
      SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BetOnlineML AS HomeOdds, AOdds.BetOnlineML AS AwayOdds, HOdds.Result AS HomeResult
      FROM Games G JOIN OddsWin HOdds ON (HOdds.oti = G.HomeTeamId AND HOdds.GameID = G.GameID) JOIN
@@ -151,48 +166,48 @@ router.get('/unfavored', function(req, res) {
   FROM UnionBoth
   ORDER BY Date;
       
-     `, function(error, results, fields) {
-       if (error) {
-         console.log(error)
-         res.json({error: error})
-       }
-       else if (results) {
+     `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
 
         results = addingWage(results, betType, wager);
-        
-        res.json({results: results})
- 
-       
-        
-       }
-       connection.release();
-     });
- 
-    });
-});
- 
 
- 
+        res.json({ results: results })
+
+
+
+      }
+      connection.release();
+    });
+
+  });
+});
+
+
+
 /* Route #4: GETS the data for various betting strategies, when the user bets on a team given that a player on that team scored a certain number of points in the last game   */
-/* Request Path: “/ifbetplayer?betType=&wager=&player=&numPoints=&team=*/
-/* Request Parameters: betType and wager, which denotes the betting strategy and the */
-/* Query Parameters: player, which denotes the player we are casing on, numPoints, which denotes the number of points scored by the player in the year before, team, which denotes the team the player is on */
+/* Request Path: “/ifbetplayer*/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
+/* Query Parameters: player, numPoints, team, startDate, endDate*/
 /* Response Parameters: the results, which is the expected profit from this kind of bet on the team with the player who scored for various wagers and betting strategies, along with the relevant game data */
-router.get('/ifbetplayer', function(req, res) {
- const betType = req.query.betType ? req.query.betType : "Constant"
- const wager = req.query.wager ? req.query.wager : 100
- const player = req.query.player ? req.query.player: 'Stephen Curry'
- const numPoints = req.query.points ? req.query.points: 20
- const team = req.query.team ? req.query.team: 'Warriors'
- const startDate = req.query.start? req.query.start: "2012-10-30"
-  const finalDate = req.query.end? req.query.end : "2019-04-10"
-   console.log(wager)
-      connectionPool.getConnection(function(err, connection) { 
-    if (err)
-    {
-        connection.release();
-        throw err;
+router.get('/ifbetplayer', function (req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const player = req.query.player ? req.query.player : 'Stephen Curry'
+  const numPoints = req.query.points ? req.query.points : 20
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
     }
+<<<<<<< Updated upstream
      connection.query(`WITH RenameHome AS (
       SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
@@ -221,44 +236,78 @@ router.get('/ifbetplayer', function(req, res) {
    SELECT C.GameID, C.Date, C.Home, C.Away, C.Bet, C.HomeOdds, C.AwayOdds, C.Win
    FROM WithPrevPoints C
    WHERE (C.PrevPoints >= '${numPoints}');
+=======
+    connection.query(`WITH HomeTeam AS (
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS HomeTeam, O.BetOnlineML AS HomeOdds, O.Result AS BettedResult, O.GameID AS GameID, O.BetonlineML AS BettedAverageLineML
+      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
+      WHERE O.Location = 'Home' AND GD.PlayerName = '${player}'
+      ORDER BY O.Date ASC
+     ), AwayTeam AS (
+      SELECT O.Date AS Date, '${team}' AS BettedTeam, GD.PTS as PTS, GD.PlayerName AS PlayerName, t.Nickname AS AwayTeam, O.BetOnlineML AS AwayOdds, O.Result AS BettedResult, O.GameID AS GameID, O.BetOnlineML AS BettedAverageLineML
+      FROM Odds O JOIN GamesDetails GD ON O.GameID = GD.GameID JOIN Teams t ON t.TeamId = O.TeamId
+      WHERE O.Location = 'Away' AND GD.PlayerName = '${player}'
+      ORDER BY O.Date ASC
+     ), PlayerToTeam AS (
+        SELECT DISTINCT p.PLAYER_NAME AS PlayerName, o.Team AS Team
+        FROM Players p JOIN Odds o ON p.TEAM_ID = o.TeamId JOIN Teams T ON o.TeamId = T.TeamId
+        WHERE p.PLAYER_NAME = '${player}' AND T.Nickname = '${team}'
+     ), UnionHomeAway AS (
+        SELECT A.Date, A.BettedTeam, A.PTS, A.GameID, A.PlayerName, H.HomeTeam, A.AwayTeam, A.BettedResult, H.HomeOdds, A.AwayOdds
+        FROM HomeTeam H JOIN AwayTeam A ON H.GameID = A.GameID AND H.PlayerName = A.PlayerName
+        WHERE H.PlayerName = '${player}' AND EXISTS (SELECT * FROM PlayerToTeam)
+     ), NumberedRows AS (
+        SELECT ROW_NUMBER() OVER(ORDER BY O.Date) AS RowNumber, O.GameID, O.Date AS Date, '${team}' AS BettedTeam, O.PTS as PTS, O.PlayerName AS PlayerName, O.HomeTeam AS HomeTeam,
+             O.AwayTeam AS AwayTeam, O.BettedResult AS BettedResult, O.HomeOdds, O.AwayOdds
+        FROM UnionHomeAway O
+        ORDER BY O.Date
+     ), CartesianProduct AS (
+        SELECT A.GameID, A.Date, A.HomeTeam AS Home, A.AwayTeam AS Away, A.BettedTeam AS Bet, A.HomeOdds, A.AwayOdds, A.BettedResult AS Win
+        FROM NumberedRows A,  NumberedRows B
+        WHERE A.RowNumber = (B.RowNumber - 1) AND B.PTS >= '${numPoints}'
+     )
+     SELECT *
+     FROM CartesianProduct
+     WHERE Date >= '${startDate}' AND Date <= '${finalDate}';
+     
+      
+>>>>>>> Stashed changes
    
-     `, function(error, results, fields) {
-       if (error) {
-         console.log(error)
-         res.json({error: error})
-       }
-       else if (results) {
-         
-         results = addingWage(results, betType, wager)
-         res.json({results: results})
-       
-        
-       }
-       connection.release();
-     });
+     `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+
+
+      }
+      connection.release();
     });
- 
+  });
+
 });
- 
+
 /* Route #5: GETS the data for various betting strategies, when the user bets on a team given that they are at home  */
-/* Request Path: “/ifbethome?betType=&wager=&team=*/
-/* Request Parameters: betType and wager, which denotes the betting strategy and the */
-/* Query Parameters: team, which denotes the team that we are betting on when they are at home */
-/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is home who scored for various wagers and betting strategies, along with the relevant game data */
-router.get('/ifbethome', function(req, res) {
- const betType = req.query.betType ? req.query.betType : "Constant"
- const wager = req.query.wager ? req.query.wager : 100
- const team = req.query.team ? req.query.team: 'Warriors'
- const startDate = req.query.start? req.query.start: "2012-10-30"
-  const finalDate = req.query.end? req.query.end : "2019-04-10"
-   console.log(wager)
-   connectionPool.getConnection(function(err, connection) { 
-    if (err)
-    {
-        connection.release();
-        throw err;
+/* Request Path: “/ifbethome */
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager */
+/* Query Parameters: team, startDate, finalDate */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is home for various wagers and betting strategies, along with the relevant game data */
+router.get('/ifbethome', function (req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
     }
-     connection.query(`WITH RenameHome AS (
+    connection.query(`WITH RenameHome AS (
       SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'home'
@@ -277,42 +326,41 @@ router.get('/ifbethome', function(req, res) {
   
     
    
-     `, function(error, results, fields) {
-       if (error) {
-         console.log(error)
-         res.json({error: error})
-       }
-       else if (results) {
-         results = addingWage(results, betType, wager)
-         res.json({results: results})
+     `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
 
-       }
-       connection.release();
-         
-     });
- 
+      }
+      connection.release();
+
     });
+
+  });
 });
- 
+
 /* Route #6: GETS the data for various betting strategies, when the user bets on a team given that they are away  */
-/* Request Path: “/ifbethome?betType=&wager=&team=*/
-/* Request Parameters: betType and wager, which denotes the betting strategy and the */
-/* Query Parameters: team, which denotes the team that we are betting on when they are at home */
-/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is away who scored for various wagers and betting strategies, along with the relevant game data */
-router.get('/ifbetaway', function(req, res) {
- const betType = req.query.betType ? req.query.betType : "Constant"
- const wager = req.query.wager ? req.query.wager : 100
- const team = req.query.team ? req.query.team: 'Warriors'
- const startDate = req.query.start? req.query.start: "2012-10-30"
- const finalDate = req.query.end? req.query.end : "2019-04-10"
-   console.log(wager)
-   connectionPool.getConnection(function(err, connection) { 
-    if (err)
-    {
-        connection.release();
-        throw err;
+/* Request Path: “/ifbetaway*/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager */
+/* Query Parameters: team, startDate, endDate */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is away for various wagers and betting strategies, along with the relevant game data */
+router.get('/ifbetaway', function (req, res) {
+  const betType = req.query.betType ? req.query.betType : "Constant"
+  const wager = req.query.wager ? req.query.wager : 100
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
     }
-     connection.query(`WITH RenameHome AS (
+    connection.query(`WITH RenameHome AS (
       SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
       FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
       WHERE O.Location = 'home'
@@ -329,25 +377,25 @@ router.get('/ifbetaway', function(req, res) {
   WHERE J.Away =  '${team}' AND Date >='${startDate}' AND Date <= '${finalDate}'
   ORDER BY Date;
   
-     `, function(error, results, fields) {
-       if (error) {
-         console.log(error)
-         res.json({error: error})
-       }
-       else if (results) {
-        
+     `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+
         results = addingWage(results, betType, wager)
- 
-         res.json({results: results})
-         
- 
-       
-        
-       }
-       connection.release();
-     });
+
+        res.json({ results: results })
+
+
+
+
+      }
+      connection.release();
     });
- 
+  });
+
 });
 
 /* Route #7: GETS all of the team names and nicknames like "Warriors, 76ers, etc."*/
@@ -355,210 +403,227 @@ router.get('/ifbetaway', function(req, res) {
 /* Request Parameters: N/A
 /* Query Parameters: N/A
 /* Response Parameters: the results, which is the a list of all of the team names along with their nicknames*/
-router.get('/teamnames', function(req, res) {
+router.get('/teamnames', function (req, res) {
 
- connectionPool.getConnection(function(err, connection) { 
-    if (err)
-    {
+  if (playerCacheCount == 0) {
+    connectionPool.getConnection(function (err, connection) {
+      if (err) {
         connection.release();
         throw err;
-    }
+      }
       connection.query(`SELECT DISTINCT CONCAT(t.CITY, ' ', t.Nickname) AS Fullname, t.Nickname AS Nickname
       FROM Teams t;
-      `, function(error, results, fields) {
+      `, function (error, results, fields) {
         if (error) {
           console.log(error)
-          res.json({error: error})
+          res.json({ error: error })
         }
         else if (results) {
-          res.json({results: results})
+          finalJSON = results;
+          res.json({ results: results })
         }
         connection.release();
       });
     });
-  
- });
+    playerCacheCount++;
+  }
+  else {
+    console.log(finalJSON)
+    res.json({ results: finalJSON })
+  }
+});
 
- /* Route #8: Reports to the backend the various forms and inputs for the betting strategies 
+/* Route #8: Reports to the backend the various forms and inputs for the betting strategies 
 /* Request Path: /onload */
 /* Request Parameters: N/A
 /* Query Parameters: N/A
 /* Response Parameters: the results, which is the a list of all of all the bets are their various inputs*/
-router.get('/onload', function(req, res) {
-  
+router.get('/onload', function (req, res) {
+
   var obj = {
-    "Bet Strategies" :
-    [{
-    "name": "Player Bet",
-    "description": "Gets the data for various betting strategies, when the user bets on a team given that a player on that team scored a certain number of points in the last game ",
-    "route": "ifbetplayer",
-    "form" :
-    {
-        "player"    : "player",
-        "points"         : "integer"
-    }}, {
-      "name": "Favored Bet",
-      "description": " Gets the data for various betting strategies, when the user bets on the favored team winning over an interval",
-      "route": "favored",
-      "form" :
-      {
-      },}, {
+    "Bet Strategies":
+      [{
+        "name": "Player Bet",
+        "description": "Gets the data for various betting strategies, when the user bets on a team given that a player on that team scored a certain number of points in the last game ",
+        "route": "ifbetplayer",
+        "form":
+        {
+          "player": "player",
+          "points": "integer"
+        }
+      }, {
+        "name": "Favored Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on the favored team winning over an interval",
+        "route": "favored",
+        "form":
+        {
+        },
+      }, {
         "name": "Unfavored Bet",
         "description": " Gets the data for various betting strategies, when the user bets on the unfavored team winning over an interval",
         "route": "unfavored",
-        "form" :
+        "form":
         {
-        },}, {
-          "name": "Home Bet",
-          "description": " Gets the data for various betting strategies, when the user bets on the home team winning over an interval",
-          "route": "ifbethome",
-          "form" :
-          {
-          },}, 
-          {
-            "name": "Away Bet",
-            "description": " Gets the data for various betting strategies, when the user bets on the away team winning over an interval",
-            "route": "ifbetaway",
-            "form" :
-            {
-            },}, 
-            {
-              "name": "Zigzag Bet",
-              "description": " Gets the data for various betting strategies, when the user bets on the home team winning after a loss over an interval",
-              "route": "zigzag",
-              "form" :
-              {
-              },}, 
-              {
-                "name": "Heavy Favorite Bet",
-                "description": " Gets the data for various betting strategies, when the user bets on the heavy favored team over an interval",
-                "route": "heavyfavorite",
-                "form" :
-                {
-                  "Odds"    : "odds",
-              },}, 
-              {
-                "name": "Win Streak Bet",
-                "description": " Gets the data for various betting strategies, when the user bets on a team on a win streak over an interval",
-                "route": "winstreak",
-                "form" :
-    {
-        "streak"         : "integer"
-    }},
-                {
-                  "name": "Losing Streak Bet",
-                  "description": " Gets the data for various betting strategies, when the user bets against a team on a losing streak over an interval",
-                  "route": "losingstreak",
-                  "form" :
-    {
-        "streak"         : "integer"
-    }},
-                  {
-                    "name": "Liked Team Bet",
-                    "description": " Gets the data for various betting strategies, when the user bets on a team they they like over an interval",
-                    "route": "likedteam",
-                    "form" :
-                    {
-                    },},
-                    {
-                      "name": "Home Recovery Bet",
-                      "description": " Gets the data for various betting strategies, when the user bets on a team that had a poor shooting performance in their previous game and are now at home over an interval",
-                      "route": "homerecovery",
-                      "form" :
-                      {
-                      },}, 
-                      {
-                        "name": "Road Recovery Bet",
-                        "description": " Gets the data for various betting strategies, when the user bets on a road team that had a crushing loss and their previous game and are now favored on the road over an interval",
-                        "route": "roadrecovery",
-                        "form" :
-                        {
-                          "previousdefeatby"         : "integer"
-                        },}, 
-                        {
-                          "name": "Blowout Bet",
-                          "description": " Gets the data for various betting strategies, when the user bets on a team that won their previous game by a blowout and are favored again to win over an interval",
-                          "route": "blowout",
-                          "form" :
-                          {
-                            "previouswinby"         : "integer"
-                          },}], 
-    "Wage Strategies" :
-    [{
-      "name": "Constant",
-      "description": "Betting the same amount of money, the wager, on each bet",   
-    }, 
-    {
-      "name": "Doubling",
-      "description": "Betting double the amount of money of the previous wager, on each bet",   
-    },
-    {
-      "name": "Increment",
-      "description": "Betting an incrementing amount of money on each wager",   
-    },
-    {
-      "name": "Martingale",
-      "description": "Betting according to the classic Martingale Strategy where one doubles their bet at each round if a loss occurs",   
-    }
-  ]
+        },
+      }, {
+        "name": "Home Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on the home team winning over an interval",
+        "route": "ifbethome",
+        "form":
+        {
+        },
+      },
+      {
+        "name": "Away Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on the away team winning over an interval",
+        "route": "ifbetaway",
+        "form":
+        {
+        },
+      },
+      {
+        "name": "Zigzag Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on the home team winning after a loss over an interval",
+        "route": "zigzag",
+        "form":
+        {
+        },
+      },
+      {
+        "name": "Heavy Favorite Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on the heavy favored team over an interval",
+        "route": "heavyfavorite",
+        "form":
+        {
+          "Odds": "odds",
+        },
+      },
+      {
+        "name": "Win Streak Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on a team on a win streak over an interval",
+        "route": "winstreak",
+        "form":
+        {
+          "streak": "integer"
+        }
+      },
+      {
+        "name": "Losing Streak Bet",
+        "description": " Gets the data for various betting strategies, when the user bets against a team on a losing streak over an interval",
+        "route": "losingstreak",
+        "form":
+        {
+          "streak": "integer"
+        }
+      },
+      {
+        "name": "Liked Team Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on a team they they like over an interval",
+        "route": "likedteam",
+        "form":
+        {
+        },
+      },
+      {
+        "name": "Home Recovery Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on a team that had a poor shooting performance in their previous game and are now at home over an interval",
+        "route": "homerecovery",
+        "form":
+        {
+        },
+      },
+      {
+        "name": "Road Recovery Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on a road team that had a crushing loss and their previous game and are now favored on the road over an interval",
+        "route": "roadrecovery",
+        "form":
+        {
+          "previousdefeatby": "integer"
+        },
+      },
+      {
+        "name": "Blowout Bet",
+        "description": " Gets the data for various betting strategies, when the user bets on a team that won their previous game by a blowout and are favored again to win over an interval",
+        "route": "blowout",
+        "form":
+        {
+          "previouswinby": "integer"
+        },
+      }],
+    "Wage Strategies":
+      [{
+        "name": "Constant",
+        "description": "Betting the same amount of money, the wager, on each bet",
+      },
+      {
+        "name": "Doubling",
+        "description": "Betting double the amount of money of the previous wager, on each bet",
+      },
+      {
+        "name": "Increment",
+        "description": "Betting an incrementing amount of money on each wager",
+      },
+      {
+        "name": "Martingale",
+        "description": "Betting according to the classic Martingale Strategy where one doubles their bet at each round if a loss occurs",
+      }
+      ]
   }
-      
- 
+
+
   res.json(obj);
 
 });
- 
+
 /* Route #9: Gets all of the names of the the players on a given team */
 /* Request Path: “/playersonteam” */
 /* Request Parameters: N/A
 /* Query Parameters: Nickname of Team
 /* Response Parameters: the results, which is the a list of all of the players on a given team*/
-router.get('/playersonteam', function(req, res) {
+router.get('/playersonteam', function (req, res) {
 
-  const team = req.query.team ? req.query.team: 'Warriors'
-  connectionPool.getConnection(function(err, connection) { 
-    if (err)
-    {
-        connection.release();
-        throw err;
+  const team = req.query.team ? req.query.team : 'Warriors'
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
     }
-  connection.query(`SELECT DISTINCT p.PLAYER_NAME AS PlayerName
+    connection.query(`SELECT DISTINCT p.PLAYER_NAME AS PlayerName
   FROM Players p JOIN Teams t ON p.TEAM_ID = t.TeamId
   WHERE NICKNAME = '${team}'
   ORDER BY p.PLAYER_NAME;
-  `, function(error, results, fields) {
-    if (error) {
-      console.log(error)
-      res.json({error: error})
-    }
-    else if (results) {
-      res.json({results: results})
-    }
-    connection.release();
-  });
+  `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        res.json({ results: results })
+      }
+      connection.release();
+    });
   });
 
 });
 
-/* Route #10: GETS the data for various betting strategies, when the user bets on a team given that they lost the game before and are at home  */
-/* Request Path: “/zigzag?betType=&wager=&team=*/
-/* Request Parameters: betType and wager, which denotes the betting strategy and the */
-/* Query Parameters: team and dates, which denotes the team that we are betting on when they are at home after a loss */
-/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is home who scored for various wagers and betting strategies, along with the relevant game data */
-router.get('/zigzag', function(req, res) {
+/* Route #10: GETS the data for various betting strategies, when the user bets on a team given that they lost the game before and are at home now */
+/* Request Path: “/zigzag/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager */
+/* Query Parameters: team, startDate, endDate */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is home for various wagers and betting strategies, along with the relevant game data */
+router.get('/zigzag', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
-  const team = req.query.team ? req.query.team: 'Warriors'
-  const startDate = req.query.start? req.query.start: "2012-10-30"
-   const finalDate = req.query.end? req.query.end : "2019-04-10"
-    console.log(wager)
-    connectionPool.getConnection(function(err, connection) { 
-      if (err)
-      {
-          connection.release();
-          throw err;
-      }
-      connection.query(`WITH RenameHome AS (
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
+    }
+    connection.query(`WITH RenameHome AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
@@ -566,6 +631,7 @@ router.get('/zigzag', function(req, res) {
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'away'
+<<<<<<< Updated upstream
      ), JoinHomeAway AS (
          SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, H.Win AS Win
          FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
@@ -594,18 +660,54 @@ router.get('/zigzag', function(req, res) {
         connection.release();
       });
   
+=======
+    ), JoinHomeAway AS (
+        SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}' AS Bet, H.HomeOdds, A.AwayOdds, H.Win AS Win
+        FROM RenameHome H JOIN RenameAway A ON H.GameId = A.GameId
+    ), NumberedRows AS (
+        SELECT ROW_NUMBER() OVER(ORDER BY Date) AS RowNumber, O.GameID, O.Date AS Date, O.Home, O.Away, O.HomeOdds, O.AwayOdds, O.Win
+        FROM JoinHomeAway O
+        WHERE O.Home =  '${team}'
+        ORDER BY O.Date ASC
+    ), CartesianProduct AS (
+        SELECT A.GameID, A.Date, A.Home, A.Away, A.Home AS Bet, A.HomeOdds, A.AwayOdds, A.Win
+        FROM NumberedRows A,  NumberedRows B
+        WHERE A.RowNumber = (B.RowNumber - 1) AND B.Win = "L"
+    )
+    SELECT *
+    FROM CartesianProduct
+    WHERE Date >= '${startDate}' AND Date <=  '${finalDate}'
+    ORDER BY Date;
+    
+   
+     
+    
+      `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+      }
+      connection.release();
+>>>>>>> Stashed changes
     });
- });
 
- /* Route #11: GETS the data for various betting strategies, when the user bets on a team given the team is a heavy favorite, specified by the odds  */
-/* Request Path: “/heavyfavorite?betType=&wager=&team=*/
-/* Request Parameters: betType and wager, which denotes the betting strategy and the */
-/* Query Parameters: team, odds, and dates, which denotes the team that we are betting on when they are at home after a loss */
-/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is home who scored for various wagers and betting strategies, along with the relevant game data */
-router.get('/heavyfavorite', function(req, res) {
+  });
+});
+
+/* Route #11: GETS the data for various betting strategies, when the user bets on a team given that the team is a heavy favorite, specified by the odds  */
+/* Request Path: “/heavyfavorite*/
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager */
+/* Query Parameters: team, odds, startDate, and finalDate*/
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is a heavy favorite for various wagers and betting strategies, along with the relevant game data */
+router.get('/heavyfavorite', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
   const odds = req.query.Odds ? req.query.Odds : -300
+<<<<<<< Updated upstream
   const team = req.query.team ? req.query.team: 'Warriors'
   const startDate = req.query.start? req.query.start: "2012-10-30"
    const finalDate = req.query.end? req.query.end : "2019-04-10"
@@ -620,6 +722,21 @@ router.get('/heavyfavorite', function(req, res) {
         SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS BetOnlineML, O.Result, T.TeamId, T.Nickname AS Nickname
         FROM Odds O JOIN Teams T ON (T.TeamId = O.TeamId)
         WHERE O.Date >= '${startDate}' AND O.Date <= '${finalDate}'
+=======
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
+    }
+    connection.query(`WITH OddsWithTeamNames AS (
+        SELECT O.TeamId as oti, O.GameId AS GameID, O.BetOnlineML AS ML, O.Result, T.TeamId, T.Nickname AS Nickname
+        FROM Odds O, Teams T
+        WHERE T.TeamId = O.TeamId
+>>>>>>> Stashed changes
     ), GameOdds AS (
         SELECT HOdds.GameId AS GameID, G.GameDate, HOdds.Nickname AS HomeTeam, AOdds.Nickname AS AwayTeam, HOdds.BetOnlineML AS HomeOdds, AOdds.BetOnlineML AS AwayOdds, HOdds.Result AS HomeResult
         FROM Games G JOIN OddsWithTeamNames HOdds ON (HOdds.GameID = G.GameID AND HOdds.oti = G.HomeTeamId)
@@ -654,44 +771,43 @@ router.get('/heavyfavorite', function(req, res) {
    
      
     
-      `, function(error, results, fields) {
-        if (error) {
-          console.log(error)
-          res.json({error: error})
-        }
-        else if (results) {
-          results = addingWage(results, betType, wager)
-          res.json({results: results})
-        }
-        connection.release();
-          
-      });
+      `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+      }
+      connection.release();
 
     });
-  
-  
- });
 
- /* Route #12: GETS the data for various betting strategies, when the user bets on a team given the team is on a large winstreak, specified by the odds  */
-/* Request Path: “/winstreak?betType=&wager=&team=*/
+  });
+
+
+});
+
+/* Route #12: GETS the data for various betting strategies, when the user bets on a team given the team is on a large winstreak */
+/* Request Path: “/winstreak*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
-/* Query Parameters: team and dates, which denotes the team that we are betting on */
-/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is winning and who scored for various wagers and betting strategies, along with the relevant game data */
-router.get('/winstreak', function(req, res) {
+/* Query Parameters: team, startDate, finalDate, and streak */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is on a winning streak for various wagers and betting strategies, along with the relevant game data */
+router.get('/winstreak', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
-  const team = req.query.team ? req.query.team: 'Warriors'
-  const startDate = req.query.start? req.query.start: "2012-10-30"
-   const finalDate = req.query.end? req.query.end : "2019-04-10"
-   const streak = req.query.streak ? req.query.streak : 2
-    console.log(wager)
-    connectionPool.getConnection(function(err, connection) { 
-      if (err)
-      {
-          connection.release();
-          throw err;
-      }
-      connection.query(`WITH RenameHome AS (
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  const streak = req.query.streak ? req.query.streak : 2
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
+    }
+    connection.query(`WITH RenameHome AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
@@ -723,42 +839,41 @@ router.get('/winstreak', function(req, res) {
     
       
     
-      `, function(error, results, fields) {
-        if (error) {
-          console.log(error)
-          res.json({error: error})
-        }
-        else if (results) {
-          results = addingWage(results, betType, wager)
-          res.json({results: results})
-        }
-        connection.release();
-          
-      });
-  
-    });
- });
+      `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+      }
+      connection.release();
 
-  /* Route #13: GETS the data for various betting strategies, when the user bets against a team given the team is on a large losing streak, specified by the odds  */
-/* Request Path: “/losingstreak?betType=&wager=&team=*/
+    });
+
+  });
+});
+
+/* Route #13: GETS the data for various betting strategies, when the user bets on a team given the team is on a large losing streak */
+/* Request Path: “/winstreak*/
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
-/* Query Parameters: team, streak, and dates, which denotes the team that we are betting on */
-/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is losing and who scored for various wagers and betting strategies, along with the relevant game data */
-router.get('/losingstreak', function(req, res) {
+/* Query Parameters: team, startDate, finalDate, and streak */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is on a losing streak for various wagers and betting strategies, along with the relevant game data */
+router.get('/losingstreak', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
-  const team = req.query.team ? req.query.team: 'Warriors'
-  const startDate = req.query.start? req.query.start: "2012-10-30"
-   const finalDate = req.query.end? req.query.end : "2019-04-10"
-   const streak = req.query.streak ? req.query.streak : 2
-    console.log(wager)
-    connectionPool.getConnection(function(err, connection) { 
-      if (err)
-      {
-          connection.release();
-          throw err;
-      }
-      connection.query(`WITH RenameHome AS (
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  const streak = req.query.streak ? req.query.streak : 2
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
+    }
+    connection.query(`WITH RenameHome AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
@@ -791,41 +906,40 @@ router.get('/losingstreak', function(req, res) {
     
       
     
-      `, function(error, results, fields) {
-        if (error) {
-          console.log(error)
-          res.json({error: error})
-        }
-        else if (results) {
-          results = addingWage(results, betType, wager)
-          res.json({results: results})
-        }
-        connection.release();
-          
-      });
-  
-    });
- });
+      `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+      }
+      connection.release();
 
-  /* Route #14: GETS the data for various betting strategies, when the user bets on a team given the that they like that team, specified by the odds  */
-/* Request Path: “/likedteam?betType=&wager=&team=*/
+    });
+
+  });
+});
+
+/* Route #14: GETS the data for various betting strategies, when the user bets on a team given the user likes that team */
+/* Request Path: “/likedteam */
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
-/* Query Parameters: team, and dates, which denotes the team that we are betting on */
-/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is liked by the user and who scored for various wagers and betting strategies, along with the relevant game data */
-router.get('/likedteam', function(req, res) {
+/* Query Parameters: team, startDate, finalDate */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is liked by the user for various wagers and betting strategies, along with the relevant game data */
+router.get('/likedteam', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
-  const team = req.query.team ? req.query.team: 'Warriors'
-  const startDate = req.query.start? req.query.start: "2012-10-30"
-   const finalDate = req.query.end? req.query.end : "2019-04-10"
-    console.log(wager)
-    connectionPool.getConnection(function(err, connection) { 
-      if (err)
-      {
-          connection.release();
-          throw err;
-      }
-      connection.query(`WITH RenameHome AS (
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
+    }
+    connection.query(`WITH RenameHome AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
@@ -842,38 +956,41 @@ router.get('/likedteam', function(req, res) {
     
       
     
-      `, function(error, results, fields) {
-        if (error) {
-          console.log(error)
-          res.json({error: error})
-        }
-        else if (results) {
-          results = addingWage(results, betType, wager)
-          res.json({results: results})
-        }
-        connection.release();
-          
-      });
-  
-    });
- });
+      `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+      }
+      connection.release();
 
-//  ROUTE 15: BACK TO BACK BLOWOUT
-router.get('/blowout', function(req, res) {
+    });
+
+  });
+});
+
+/* Route #15: GETS the data for various betting strategies, when the user bets on a team given that they just blew out a team in the game prior */
+/* Request Path: “/blowout */
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
+/* Query Parameters: team, startDate, finalDate, previouswinby */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is coming off a huge win by margin for various wagers and betting strategies, along with the relevant game data */
+router.get('/blowout', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
-  const team = req.query.team ? req.query.team: 'Warriors'
-  const startDate = req.query.start? req.query.start: "2012-10-30"
-   const finalDate = req.query.end? req.query.end : "2019-04-10"
-   const previouswinby = req.query.previouswinby ? req.query.previouswinby: 15
-    console.log(wager)
-    connectionPool.getConnection(function(err, connection) { 
-      if (err)
-      {
-          connection.release();
-          throw err;
-      }
-      connection.query(`WITH RenameHome AS (
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  const previouswinby = req.query.previouswinby ? req.query.previouswinby : 15
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
+    }
+    connection.query(`WITH RenameHome AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
@@ -923,40 +1040,39 @@ router.get('/blowout', function(req, res) {
      WHERE (P.Home = '${team}' AND P.Spread <= '-10' AND P.PrevDif >= '${previouswinby}' AND P.PrevWin = 'W')
      
      
-     `, function(error, results, fields) {
-        if (error) {
-          console.log(error)
-          res.json({error: error})
-        }
-        else if (results) {
-          results = addingWage(results, betType, wager)
-          res.json({results: results})
-        }
-        connection.release();
-      });
-  
+     `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+      }
+      connection.release();
     });
- });
 
-  /* Route #16: GETS the data for various betting strategies, when the user bets on a team given they shot poorly in the previous game and are now at home, specified by the odds  */
-/* Request Path: “/homerecovery?betType=&wager=&team=*/
+  });
+});
+
+/* Route #16: GETS the data for various betting strategies, when the user bets on a team given they shot poorly in the previous game and are now at home */
+/* Request Path: “/homerecovery */
 /* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
-/* Query Parameters: team and dates, which denotes the team that we are betting on */
-/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is recovering from a poor shooting performance and who scored for various wagers and betting strategies, along with the relevant game data */
-router.get('/homerecovery', function(req, res) {
+/* Query Parameters: team, startDate, finalDate */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is recovering from a poor shooting performance for various wagers and betting strategies, along with the relevant game data */
+router.get('/homerecovery', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
-  const team = req.query.team ? req.query.team: 'Warriors'
-  const startDate = req.query.start? req.query.start: "2012-10-30"
-   const finalDate = req.query.end? req.query.end : "2019-04-10"
-    console.log(wager)
-    connectionPool.getConnection(function(err, connection) { 
-      if (err)
-      {
-          connection.release();
-          throw err;
-      }
-      connection.query(`WITH RenameHome AS (
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
+    }
+    connection.query(`WITH RenameHome AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home'
@@ -1005,37 +1121,40 @@ router.get('/homerecovery', function(req, res) {
          FROM Stats S)
      ))
      
-     `, function(error, results, fields) {
-        if (error) {
-          console.log(error)
-          res.json({error: error})
-        }
-        else if (results) {
-          results = addingWage(results, betType, wager)
-          res.json({results: results})
-        }
-        connection.release();
-      });
-  
+     `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+      }
+      connection.release();
     });
- });
 
-//  ROUTE #17: RoadFavorite
-router.get('/roadrecovery', function(req, res) {
+  });
+});
+
+/* Route #17: GETS the data for various betting strategies, when the user bets on a team given they lost by a margin and their previous game and are now favored to win on the road */
+/* Request Path: “/roadrecovery */
+/* Request Parameters: betType and wager, which denotes the betting strategy and the wager*/
+/* Query Parameters: team, startDate, finalDate, previousdefeatby */
+/* Response Parameters: the results, which is the expected profit from this kind of bet on the team that is recovering from a bad loss in the previous game for various wagers and betting strategies, along with the relevant game data */
+router.get('/roadrecovery', function (req, res) {
   const betType = req.query.betType ? req.query.betType : "Constant"
   const wager = req.query.wager ? req.query.wager : 100
-  const team = req.query.team ? req.query.team: 'Warriors'
-  const startDate = req.query.start? req.query.start: "2012-10-30"
-   const finalDate = req.query.end? req.query.end : "2019-04-10"
-   const previousdefeatby = req.query.previousdefeatby ? req.query.previousdefeatby: 15
-    console.log(wager)
-    connectionPool.getConnection(function(err, connection) { 
-      if (err)
-      {
-          connection.release();
-          throw err;
-      }
-      connection.query(`WITH RenameHome AS (
+  const team = req.query.team ? req.query.team : 'Warriors'
+  const startDate = req.query.start ? req.query.start : "2012-10-30"
+  const finalDate = req.query.end ? req.query.end : "2019-04-10"
+  const previousdefeatby = req.query.previousdefeatby ? req.query.previousdefeatby : 15
+  console.log(wager)
+  connectionPool.getConnection(function (err, connection) {
+    if (err) {
+      connection.release();
+      throw err;
+    }
+    connection.query(`WITH RenameHome AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
         WHERE O.Location = 'home' AND (O.Date >= '${startDate}') AND (O.Date  <= '${finalDate}')
@@ -1075,364 +1194,308 @@ router.get('/roadrecovery', function(req, res) {
      ORDER BY GameID
      
      
-     `, function(error, results, fields) {
-        if (error) {
-          console.log(error)
-          res.json({error: error})
-        }
-        else if (results) {
-          results = addingWage(results, betType, wager)
-          res.json({results: results})
-        }
-        connection.release();
-      });
-  
+     `, function (error, results, fields) {
+      if (error) {
+        console.log(error)
+        res.json({ error: error })
+      }
+      else if (results) {
+        results = addingWage(results, betType, wager)
+        res.json({ results: results })
+      }
+      connection.release();
     });
- });
 
-function addingWage(results, betType, wager)
-{
+  });
+});
+
+
+//a function that cases on the betting strategy that the user selects and assigns betting values to each game based on what the user selected
+function addingWage(results, betType, wager) {
   count = 0;
   winnings = 0;
-  if (betType == "Constant")
-         {
-         for (let i = 0; i  < results.length; i++)
-         {
-            results[i].wager = wager;
-            if (results[i].Win == "W")
-            {
-               if (results[i].Bet == results[i].Home)
-               {
-                if (results[i].HomeOdds < 0)
-                {
-                   
-                     winnings = ((-100 / (results[i].HomeOdds)) * wager) + winnings
-                     results[i].amountwon = ((-100 / (results[i].HomeOdds)) * wager);
-                     results[i].totalwinnings = winnings;
-                    
-                }
-                else
-                {
-                  winnings = ((results[i].HomeOdds / (100)) * wager) + winnings
-                  results[i].amountwon = ((results[i].HomeOdds / (100)) * wager);
-                  results[i].totalwinnings = winnings;
+  if (betType == "Constant") {
+    for (let i = 0; i < results.length; i++) {
+      results[i].wager = wager;
+      if (results[i].Win == "W") {
+        if (results[i].Bet == results[i].Home) {
+          if (results[i].HomeOdds < 0) {
 
-                }
-               }
-               else
-               {
-                if (results[i].AwayOdds < 0)
-                {
-                   
-                     winnings = ((-100 / (results[i].AwayOdds)) * wager) + winnings
-                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * wager);
-                     results[i].totalwinnings = winnings;
-                    
-                }
-                else
-                {
-                  winnings = ((results[i].AwayOdds / (100)) * wager) + winnings
-                  results[i].amountwon = ((results[i].AwayOdds / (100)) * wager);
-                  results[i].totalwinnings = winnings;
+            winnings = ((-100 / (results[i].HomeOdds)) * wager) + winnings
+            results[i].amountwon = ((-100 / (results[i].HomeOdds)) * wager);
+            results[i].totalwinnings = winnings;
 
-                }
-               }
-            }
-            else
-            {
-                 winnings = winnings - wager
-                 results[i].amountwon = -wager;
-                results[i].totalwinnings = winnings;
-            }
-            count++;
-         }
-         }
-         else if (betType == "Increment")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-            results[i].wager = (wager * (count + 1));
-            if (results[i].Win == "W")
-            {
-               if (results[i].Bet == results[i].Home)
-               {
-                if (results[i].HomeOdds < 0)
-                {
-                   
-                     winnings = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1))) + winnings
-                     results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1)));
-                     results[i].totalwinnings = winnings;
-                    
-                }
-                else
-                {
-                  winnings = ((results[i].HomeOdds / (100)) *(wager * (count + 1))) + winnings
-                  results[i].amountwon = ((results[i].HomeOdds / (100)) * (wager * (count + 1)));
-                  results[i].totalwinnings = winnings;
+          }
+          else {
+            winnings = ((results[i].HomeOdds / (100)) * wager) + winnings
+            results[i].amountwon = ((results[i].HomeOdds / (100)) * wager);
+            results[i].totalwinnings = winnings;
 
-                }
-               }
-               else
-               {
-                if (results[i].AwayOdds < 0)
-                {
-                   
-                     winnings = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1))) + winnings
-                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1)));
-                     results[i].totalwinnings = winnings;
-                    
-                }
-                else
-                {
-                  winnings = ((results[i].AwayOdds / (100)) * (wager * (count + 1))) + winnings
-                  results[i].amountwon = ((results[i].AwayOdds / (100)) * (wager * (count + 1)));
-                  results[i].totalwinnings = winnings;
-
-                }
-               }
-            }
-            else
-            {
-                 winnings = winnings - (wager * (count + 1))
-                 results[i].amountwon = -(wager * (count + 1));
-                results[i].totalwinnings = winnings;
-            }
-            count++;
-         }
-         }
-         else if (betType == "Doubling")
-         {
-           for (let i = 0; i  < results.length; i++)
-           {
-            results[i].wager = (wager * (2 *  (count + 1)));
-            if (results[i].Win == "W")
-            {
-               if (results[i].Bet == results[i].Home)
-               {
-                if (results[i].HomeOdds < 0)
-                {
-                   
-                     winnings = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1)))) + winnings
-                     results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (2 *  (count + 1))));
-                     results[i].totalwinnings = winnings;
-                    
-                }
-                else
-                {
-                  winnings = ((results[i].HomeOdds / (100)) * (wager * (2 *  (count + 1)))) + winnings
-                  results[i].amountwon = ((results[i].HomeOdds / (100)) * (wager * (2 *  (count + 1))));
-                  results[i].totalwinnings = winnings;
-
-                }
-               }
-               else
-               {
-                if (results[i].AwayOdds < 0)
-                {
-                   
-                     winnings = ((-100 / (results[i].AwayOdds)) * (wager * (2 *  (count + 1)))) + winnings
-                     results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (2 *  (count + 1))));
-                     results[i].totalwinnings = winnings;
-                    
-                }
-                else
-                {
-                  winnings = ((results[i].AwayOdds / (100)) * (wager * (2 *  (count + 1)))) + winnings
-                  results[i].amountwon = ((results[i].AwayOdds / (100)) * (wager * (2 *  (count + 1))));
-                  results[i].totalwinnings = winnings;
-
-                }
-               }
-            }
-            else
-            {
-                 winnings = winnings - (wager * (2 *  (count + 1)))
-                 results[i].amountwon = -(wager * (2 *  (count + 1)));
-                results[i].totalwinnings = winnings;
-            }
-            count++;
-         }
-         }
-         else if (betType = "Martingale")
-         {
-          for (let i = 0; i  < results.length; i++)
-          {
-           
-            if (i != 0)
-            {
-            if (results[i-1].Win == "L")
-            {
-               results[i].wager = (2 * results[i-1].wager)
-            }
-            else
-            {
-              results[i].wager = wager;
-            }
-            }
-            else
-            {
-              results[i].wager = wager;
-            }
-            
-           if (results[i].Win == "W")
-           {
-              if (results[i].Bet == results[i].Home)
-              {
-               if (results[i].HomeOdds < 0)
-               {
-                  
-                    winnings = ((-100 / (results[i].HomeOdds)) * (results[i].wager)) + winnings
-                    results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (results[i].wager));
-                    results[i].totalwinnings = winnings;
-                   
-               }
-               else
-               {
-                 winnings = ((results[i].HomeOdds / (100)) * (results[i].wager)) + winnings
-                 results[i].amountwon = ((results[i].HomeOdds / (100)) * (results[i].wager)) ;
-                 results[i].totalwinnings = winnings;
-
-               }
-              }
-              else
-              {
-               if (results[i].AwayOdds < 0)
-               {
-                  
-                    winnings = ((-100 / (results[i].AwayOdds)) * (results[i].wager)) + winnings
-                    results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (results[i].wager));
-                    results[i].totalwinnings = winnings;
-                   
-               }
-               else
-               {
-                 winnings = ((results[i].AwayOdds / (100)) * (results[i].wager)) + winnings
-                 results[i].amountwon = ((results[i].AwayOdds / (100)) * (results[i].wager))
-                 results[i].totalwinnings = winnings;
-
-               }
-              }
-           }
-           else
-           {
-                winnings = winnings - (results[i].wager)
-                results[i].amountwon = -(results[i].wager);
-               results[i].totalwinnings = winnings;
-           }
-           count++;
-
-         }
+          }
         }
+        else {
+          if (results[i].AwayOdds < 0) {
 
-         return results;
+            winnings = ((-100 / (results[i].AwayOdds)) * wager) + winnings
+            results[i].amountwon = ((-100 / (results[i].AwayOdds)) * wager);
+            results[i].totalwinnings = winnings;
+
+          }
+          else {
+            winnings = ((results[i].AwayOdds / (100)) * wager) + winnings
+            results[i].amountwon = ((results[i].AwayOdds / (100)) * wager);
+            results[i].totalwinnings = winnings;
+
+          }
+        }
+      }
+      else {
+        winnings = winnings - wager
+        results[i].amountwon = -wager;
+        results[i].totalwinnings = winnings;
+      }
+      count++;
+    }
+  }
+  else if (betType == "Increment") {
+    for (let i = 0; i < results.length; i++) {
+      results[i].wager = (wager * (count + 1));
+      if (results[i].Win == "W") {
+        if (results[i].Bet == results[i].Home) {
+          if (results[i].HomeOdds < 0) {
+
+            winnings = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1))) + winnings
+            results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (count + 1)));
+            results[i].totalwinnings = winnings;
+
+          }
+          else {
+            winnings = ((results[i].HomeOdds / (100)) * (wager * (count + 1))) + winnings
+            results[i].amountwon = ((results[i].HomeOdds / (100)) * (wager * (count + 1)));
+            results[i].totalwinnings = winnings;
+
+          }
+        }
+        else {
+          if (results[i].AwayOdds < 0) {
+
+            winnings = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1))) + winnings
+            results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (count + 1)));
+            results[i].totalwinnings = winnings;
+
+          }
+          else {
+            winnings = ((results[i].AwayOdds / (100)) * (wager * (count + 1))) + winnings
+            results[i].amountwon = ((results[i].AwayOdds / (100)) * (wager * (count + 1)));
+            results[i].totalwinnings = winnings;
+
+          }
+        }
+      }
+      else {
+        winnings = winnings - (wager * (count + 1))
+        results[i].amountwon = -(wager * (count + 1));
+        results[i].totalwinnings = winnings;
+      }
+      count++;
+    }
+  }
+  else if (betType == "Doubling") {
+    for (let i = 0; i < results.length; i++) {
+      results[i].wager = (wager * (2 * (count + 1)));
+      if (results[i].Win == "W") {
+        if (results[i].Bet == results[i].Home) {
+          if (results[i].HomeOdds < 0) {
+
+            winnings = ((-100 / (results[i].HomeOdds)) * (wager * (2 * (count + 1)))) + winnings
+            results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (wager * (2 * (count + 1))));
+            results[i].totalwinnings = winnings;
+
+          }
+          else {
+            winnings = ((results[i].HomeOdds / (100)) * (wager * (2 * (count + 1)))) + winnings
+            results[i].amountwon = ((results[i].HomeOdds / (100)) * (wager * (2 * (count + 1))));
+            results[i].totalwinnings = winnings;
+
+          }
+        }
+        else {
+          if (results[i].AwayOdds < 0) {
+
+            winnings = ((-100 / (results[i].AwayOdds)) * (wager * (2 * (count + 1)))) + winnings
+            results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (wager * (2 * (count + 1))));
+            results[i].totalwinnings = winnings;
+
+          }
+          else {
+            winnings = ((results[i].AwayOdds / (100)) * (wager * (2 * (count + 1)))) + winnings
+            results[i].amountwon = ((results[i].AwayOdds / (100)) * (wager * (2 * (count + 1))));
+            results[i].totalwinnings = winnings;
+
+          }
+        }
+      }
+      else {
+        winnings = winnings - (wager * (2 * (count + 1)))
+        results[i].amountwon = -(wager * (2 * (count + 1)));
+        results[i].totalwinnings = winnings;
+      }
+      count++;
+    }
+  }
+  else if (betType = "Martingale") {
+    for (let i = 0; i < results.length; i++) {
+
+      if (i != 0) {
+        if (results[i - 1].Win == "L") {
+          results[i].wager = (2 * results[i - 1].wager)
+        }
+        else {
+          results[i].wager = wager;
+        }
+      }
+      else {
+        results[i].wager = wager;
+      }
+
+      if (results[i].Win == "W") {
+        if (results[i].Bet == results[i].Home) {
+          if (results[i].HomeOdds < 0) {
+
+            winnings = ((-100 / (results[i].HomeOdds)) * (results[i].wager)) + winnings
+            results[i].amountwon = ((-100 / (results[i].HomeOdds)) * (results[i].wager));
+            results[i].totalwinnings = winnings;
+
+          }
+          else {
+            winnings = ((results[i].HomeOdds / (100)) * (results[i].wager)) + winnings
+            results[i].amountwon = ((results[i].HomeOdds / (100)) * (results[i].wager));
+            results[i].totalwinnings = winnings;
+
+          }
+        }
+        else {
+          if (results[i].AwayOdds < 0) {
+
+            winnings = ((-100 / (results[i].AwayOdds)) * (results[i].wager)) + winnings
+            results[i].amountwon = ((-100 / (results[i].AwayOdds)) * (results[i].wager));
+            results[i].totalwinnings = winnings;
+
+          }
+          else {
+            winnings = ((results[i].AwayOdds / (100)) * (results[i].wager)) + winnings
+            results[i].amountwon = ((results[i].AwayOdds / (100)) * (results[i].wager))
+            results[i].totalwinnings = winnings;
+
+          }
+        }
+      }
+      else {
+        winnings = winnings - (results[i].wager)
+        results[i].amountwon = -(results[i].wager);
+        results[i].totalwinnings = winnings;
+      }
+      count++;
+
+    }
+  }
+
+  return results;
 }
 
 /* Route #18: Add a user to the DynamoDB Table */
-router.post('/adduser', function(req, res) {
-    var userName = req.body.username;
-    db.lookup(userName, function(err, data) {
-       if (data)
-       {
-          res.json({error: "This username is taken."})
-       }
-       else {
-          var passWord = req.body.password;
-          var fullname = ""+req.body.firstname+" "+req.body.lastname;
-          var emailAddress = req.body.emailaddress;
-          if (userName == undefined || passWord == undefined|| fullname == undefined || emailAddress == undefined )
-			    {
-				      res.json({error: "An input was empty or inefficient. Try again!"})
-			    }
-          else {
-            var hashedPassword = CryptoJS.SHA256(passWord).toString()
-            db.addUser(userName, hashedPassword, fullname, emailAddress, function(err, data) {
-            {
-                if (err)
-                {
-                  console.log(err);
-                }
-                else{
-                  res.json({username: userName})
-                }
-                
+router.post('/adduser', function (req, res) {
+  var userName = req.body.username;
+  db.lookup(userName, function (err, data) {
+    if (data) {
+      res.json({ error: "This username is taken." })
+    }
+    else {
+      var passWord = req.body.password;
+      var fullname = "" + req.body.firstname + " " + req.body.lastname;
+      var emailAddress = req.body.emailaddress;
+      if (userName == undefined || passWord == undefined || fullname == undefined || emailAddress == undefined) {
+        res.json({ error: "An input was empty or inefficient. Try again!" })
+      }
+      else {
+        var hashedPassword = CryptoJS.SHA256(passWord).toString()
+        db.addUser(userName, hashedPassword, fullname, emailAddress, function (err, data) {
+          {
+            if (err) {
+              console.log(err);
             }
-          });
+            else {
+              res.json({ username: userName })
+            }
+
           }
-       }
-    })
+        });
+      }
+    }
+  })
 
 });
 
-/* Route #19: Check that a user is in the DynamoDB Table */
-router.post('/login', function(req, res) {
+/* Route #19: Check that a user is in the DynamoDB Table, and then check if the password matches */
+router.post('/login', function (req, res) {
   var username = req.body.username;
   var password = req.body.password;
-  db.lookup(username, function(err, data) {
-		if (err)
-		{
-			res.json({error: "An input was empty or inefficient. Try again!"})
-		} else if (data) {
-			var hashedPassword = CryptoJS.SHA256(password).toString();
-			if (data == hashedPassword)
-			{
-        res.json({username: username})
-			}
-			else
-			{
-				res.json({error: "You entered the password incorrectly. Try again!"})
-			}
-		}
-		else
-		{
-      res.json({error: "This username does not exist. Try again!"})
-		}
+  db.lookup(username, function (err, data) {
+    if (err) {
+      res.json({ error: "An input was empty or inefficient. Try again!" })
+    } else if (data) {
+      var hashedPassword = CryptoJS.SHA256(password).toString();
+      if (data == hashedPassword) {
+        res.json({ username: username })
+      }
+      else {
+        res.json({ error: "You entered the password incorrectly. Try again!" })
+      }
+    }
+    else {
+      res.json({ error: "This username does not exist. Try again!" })
+    }
 
-	});
+  });
 });
 
 /* Route #20: Add a query to the DynamoDB Table */
-router.post('/savequery', function(req, res) {
+router.post('/savequery', function (req, res) {
   var username = req.body.username;
   var query = req.body.query;
-  if (username != undefined)
-	{
-		db.addQuery(username, query, function(err, data)
-		{
-       console.log(data);
-       res.json({query: "Saved!"})
-		});
-	}
-});
-
-/* Route #21: Add a query to the DynamoDB Table */
-router.post('/getqueries', function(req, res) {
-  var username = req.body.username;
-  if (username != undefined)
-	{
-		db.queriesofuser(username, function(err, data) {
-      const queries = [];
-      if (data != undefined && data != null)
-      {
-      for (var l = 0; l < data.length; l++)
-      {
-      queries.push(data[l].query.S);
-      }
-      res.json({queriesList: queries})
-      }
-      else
-      {
-      res.json({queriesList: "You have no queries saved!"})
-      }
-     
+  if (username != undefined) {
+    db.addQuery(username, query, function (err, data) {
+      console.log(data);
+      res.json({ query: "Saved!" })
     });
-	}
+  }
+});
+
+/* Route #21: Get queries from a particular user from the DynamoDB Table */
+router.post('/getqueries', function (req, res) {
+  var username = req.body.username;
+  if (username != undefined) {
+    db.queriesofuser(username, function (err, data) {
+      const queries = [];
+      if (data != undefined && data != null) {
+        for (var l = 0; l < data.length; l++) {
+          queries.push(data[l].query.S);
+        }
+        res.json({ queriesList: queries })
+      }
+      else {
+        res.json({ queriesList: "You have no queries saved!" })
+      }
+
+    });
+  }
 });
 
 
 
 
 
- 
+
 module.exports = router;
- 
+
 
