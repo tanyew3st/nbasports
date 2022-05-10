@@ -1038,11 +1038,11 @@ router.get('/roadrecovery', function(req, res) {
       connection.query(`WITH RenameHome AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Home, O.BetOnlineML AS HomeOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
-        WHERE O.Location = 'home' AND (O.Date >= ${startDate}) AND (O.Date  >= ${finalDate})
+        WHERE O.Location = 'home' AND (O.Date >= '${startDate}') AND (O.Date  <= '${finalDate}')
      ), RenameAway AS (
         SELECT O.GameID, O.Date, O.Location, T.Nickname AS Away, O.BetOnlineML AS AwayOdds, O.Result AS Win
         FROM Odds O JOIN Teams T ON O.TeamID = T.TeamId
-        WHERE O.Location = 'away' AND (O.Date >= ${startDate}) AND (O.Date  >= ${finalDate})
+        WHERE O.Location = 'away' AND (O.Date >= '${startDate}') AND (O.Date  <= '${finalDate}')
      ), JoinHomeAway AS (
          SELECT H.GameID, A.Date, H.Home AS Home, A.Away AS Away, '${team}
      ' AS Bet, H.HomeOdds, A.AwayOdds,
