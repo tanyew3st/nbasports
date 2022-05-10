@@ -917,7 +917,7 @@ router.get('/blowout', function(req, res) {
          SELECT *, LAG(Win, 1) OVER (ORDER BY GameID) AS PrevWin, LAG(Difference, 1) OVER (ORDER BY GameID) AS PrevDif
          FROM SpreadAndDif S
      )
-     SELECT P.GameID, P.Date, P.Home, P.Away, P.Bet AS BetAgainst, P.HomeOdds, P.AwayOdds,
+     SELECT P.GameID, P.Date, P.Home, P.Away, P.Bet AS Bet, P.HomeOdds, P.AwayOdds,
             IF((P.Difference <= ABS(Spread) AND P.Win = 'W') OR P.Win = 'W', 'W', 'L') AS Win
      FROM PrevGames P
      WHERE (P.Home = '${team}' AND P.Spread <= '-10' AND P.PrevDif >= '${previouswinby}' AND P.PrevWin = 'W')
