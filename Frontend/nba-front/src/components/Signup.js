@@ -1,6 +1,5 @@
 import {
   faUser,
-  faDoorOpen,
   faEnvelope,
   faLock,
   fa1,
