@@ -1289,6 +1289,8 @@ router.post("/adduser", function (req, res) {
         res.json({ error: "Not a valid last name!" });
       } else if (userName.length < 8) {
         res.json({ error: "Username must be at least 8 characters long!" });
+      } else if (passWord.length < 8) {
+        res.json({ error: "Password must be at least 8 characters long!" });
       } else if (!(/(.+)@(.+){2,}\.(.+){2,}/.test(emailAddress))) {
         res.json({ error: "The Email Address was malformed. Try again!" });
       } else {
